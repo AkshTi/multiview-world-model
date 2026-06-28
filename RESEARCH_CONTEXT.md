@@ -202,22 +202,52 @@ crossing-constrained middles, marked in code as an approximation.** Posterior-co
 is **Open Q1** for Hyunwoo. (The principled route is to *train a net* to regress the two-video
 velocity from `(v2,t, v0)` marginalizing `v1` — by §4.1 its optimum is the posterior average.)
 
-### 4.5 Hyunwoo's written sharpening [SLACK]
+### 4.5 Hyunwoo's written reformulation [SLACK] — and a fork it opens
 
 > "Keep `q` the model you'd like to train and `p` what you have. The essence of DMD is a
 > relaxation of `D_KL(q_θ ‖ p)`. `q_θ` and `p` should represent the **same joint
-> distribution, factorized differently.**"
+> distribution, factorized differently.** Consider `q_θ(v2,v0)` and `p(v2,v0)` — you want them
+> identical, so the objective is the KLD between these two joints. Since you already have
+> `p(v0)` and `p(v2|v0)`, factorize `p(v2,v0)=p(v2|v0)p(v0)`. What you *want* is
+> `q_θ(v2|v1,v0)`, which you do not have a target for. Hence rewrite the generative process of
+> `q_θ(v2,v0)` as a marginalization of `v1`:
+> `q_θ(v2,v0)=∫dv1 q_θ(v2|v1,v0) q_θ(v1|v0) q_θ(v0)`, using `p(v1|v0)` and `p(v0)` for the
+> latter two. So then what is the score estimate of this marginalized `q_θ(v2,v0)`? One caveat:
+> while the score of `p(v2,v0)=p(v2|v0)p(v0)` is the *sum* of the scores of `p(v2|v0)` and
+> `p(v0)`, **that might not hold for the diffused distribution.**"
 
-Concretely:
-- Teacher joint you *have*: `p(v2,v0) = p(v2|v0) p(v0)`.
-- Student joint you *want*: `q_θ(v2,v0) = ∫ dv1 · q_θ(v2|v1,v0) · q_θ(v1|v0) · q_θ(v0)`.
-- **Reuse** `p(v1|v0)` and `p(v0)` for `q_θ(v1|v0)` and `q_θ(v0)` (we already have them) → the
-  **only piece actually trained is `q_θ(v2|v1,v0)`.**
-- **[SLACK] Caveat (important, flagged but unresolved):** while the score of
-  `p(v2,v0)=p(v2|v0)p(v0)` is the *sum* of the scores of `p(v2|v0)` and `p(v0)`, **this is NOT
-  generally true for the *diffused* distribution.** ⟹ the marginalized/joint score must be
-  **estimated** (e.g., by the fake-score net / regression trick), not assembled by adding
-  conditional scores. This is the theoretical crux behind why `s_fake` needs its own network.
+Concretely [SLACK]:
+- Teacher joint you *have*: `p(v2,v0) = p(v2|v0) p(v0)` — `p(v2|v0)` is the **DIRECT** single-hop
+  conditional (released SPT v0→v2), **not** an average over middles.
+- Student joint you *want*: `q_θ(v2,v0) = ∫ dv1 · q_θ(v2|v1,v0) · q_θ(v1|v0) · q_θ(v0)`; reuse
+  `p(v1|v0)` and `p(v0)` for the latter two → **the only trained piece is `q_θ(v2|v1,v0)`.**
+- **Caveat:** the score of the *diffused* joint is **not** the sum of diffused conditional
+  scores ⟹ the marginal/joint score must be **estimated** (fake-score net / §4.1 regression
+  trick), not assembled by adding conditional scores. This is the theoretical crux behind why
+  `s_fake` needs its own network.
+
+> ⚠️ **ACCURACY FLAG — the marginalization sits on opposite sides in the two sources, and this
+> is NOT cosmetic.** §4.2–4.4 (from [HANDOFF/DERIV]) put the integral on the **teacher**:
+> `s_real = E_{v1}[∇log p(v2|v0,v1)]` (the *consistent* teacher `p'`, averaged over middles).
+> §4.5 (from [SLACK]) puts the integral on the **student**: the teacher is the **direct**
+> `p(v2|v0)` (so `s_real` is a single v0→v2 teacher call, no middle), and the middle integral
+> lives inside `q_θ(v2,v0)`, i.e. it is carried by **`s_fake`**.
+>
+> These two framings **coincide only if** `p(v2|v0)=∫p(v2|v0,v1)p(v1|v0)dv1` — i.e. only if SPT
+> were *already self-consistent*. **The entire premise of the project is that it is NOT**, so
+> the gap between the direct `p(v2|v0)` and the marginal `p'(v2|v0)` is *precisely the
+> inconsistency we are fighting*. Therefore the choice changes the implementation:
+> - **Marginal-teacher (HANDOFF):** average K frozen teacher calls over middles to form
+>   `s_real`; `s_fake` is a standard fake-score net. (This is what `PLAN.md` Rung 2 and
+>   Decision 0 currently build.)
+> - **Direct-teacher (SLACK):** `s_real` = one direct teacher call `p(v2|v0)`; the consistency
+>   pressure comes from forcing the student's *marginal-over-middles* to match it, so the hard
+>   object is `s_fake` (the marginalized student score, with the diffusion caveat above).
+>
+> **Status: OPEN — confirm with Hyunwoo which side carries the marginalization (folded into
+> Open Q1).** [MEETING ~37:11] leans toward the direct-teacher reading ("`P` = the frozen
+> 2-video SPT; `P_fake` = the autoregressive student"), while [HANDOFF] D2 explicitly builds the
+> marginal teacher and calls it "the contribution." Do not silently assume they are the same.
 
 ---
 
@@ -245,6 +275,13 @@ W( −(v_t − v)/σ² ) = −(W v_t − W v)/σ² = −(x_t − x)/σ²    ⟹ 
 So you **reuse the joint score — no new network** for the stitching term. Same DPS /
 linear-inverse-problem machinery. **Open Q2:** exact conditions on `W` (slice-then-average vs.
 average-then-slice equality holds at high noise / genuinely disjoint frames).
+
+> **Convention note [CODE]:** this derivation writes noising in the **variance-exploding** form
+> `v_t = v + σε` (so the arrow is `−(v_t−v)/σ²`), whereas the actual SPT scheduler is
+> **flow-matching** `x_t=(1−σ)x_0+σε` (§7). The transport conclusion `s_x(x_t)=W·s_v(v_t)` is
+> **convention-independent** — it only needs `W` linear with `WWᵀ=I` so noising commutes with
+> slicing — but when implementing, compute `s_v` with the §7 flow-matching formula, not the VE
+> arrow shown here.
 
 **[MEETING 21:26–27:35] The framing Hyunwoo gave for D3 — why linearity is the whole point.**
 Picking one frame per video = a **linear projection** `y = Wx`, exactly the setup of
@@ -371,6 +408,10 @@ a target on exactly one `source_video`** (`:686`). Resolution that keeps the met
   OOD at first; the DMD loss fine-tunes it in (see §9 OOD reassurance). **Fake-score net** = a
   second extended SPT mirroring the student.
 - This is exactly [HANDOFF/MEETING]'s "teacher caps at 2, student generates 3+, D4 pairwise."
+- ⚠️ **Decision 0 assumes the marginal-teacher (HANDOFF) reading of D2** (`s_real` averaged over
+  middles `v1` fed as the 1-source). If Hyunwoo confirms the **direct-teacher (SLACK)** reading
+  instead (§4.5), the teacher becomes a single `p(v2|v0)` call (source = `v0`) and the
+  marginalization moves into `s_fake`/the student — revisit this block accordingly. (Open Q1a.)
 
 ### The three N-video edit sites (Rung 4; NOT the first task) [HANDOFF, verified CODE]
 1. **Fusion** `:730`: `torch.cat([latents, source_latents], dim=2)` → cat N sources in
@@ -483,10 +524,14 @@ The code is under `spacetimepilot/model/` and `spacetimepilot/wan/` (the **[HAND
 
 ## 14. Open questions to track (with provenance) [HANDOFF + SLACK + reasoning]
 
-- **Q1 — D2 posterior vs prior** sampling of middles `v1` (and the related 1-source `p(v2|v1)`
-  vs ideal 2-source `p(v2|v0,v1)` from Decision 0). Cheap recipe is biased; crossing constraint
-  is meant to make it safe; transcript trick gives the unbiased route at the cost of a net.
-  **Sharpened by [SLACK]:** score-of-diffused-joint ≠ sum-of-conditional-scores → must estimate.
+- **Q1 — D2 marginalization: which side, and prior vs posterior.** Two sub-questions:
+  (a) **Which side carries the integral** — the *teacher* (HANDOFF: `s_real`=avg over middles)
+  or the *student* (SLACK: direct `s_real`, marginal `s_fake`)? They differ exactly by SPT's
+  inconsistency (§4.5 ACCURACY FLAG). (b) Given a side, **posterior vs prior** sampling of
+  middles `v1` (and 1-source `p(v2|v1)` vs ideal 2-source `p(v2|v0,v1)`, Decision 0): the cheap
+  prior recipe is biased; the crossing constraint is meant to make it safe; the §4.1 transcript
+  trick gives the unbiased route at the cost of a net. **[SLACK] caveat:**
+  score-of-diffused-joint ≠ sum-of-conditional-scores → the marginal score must be *estimated*.
 - **Q2 — D3 exact conditions on `W`** (slice-then-average vs average-then-slice; high-noise /
   disjoint-frame regime).
 - **Q3 — D4 transitivity / drift** — does pairwise-window consistency buy global consistency,
