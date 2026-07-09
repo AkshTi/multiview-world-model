@@ -72,37 +72,38 @@ away from the student's own pile-up), pushed through the generator. Implement as
   matching on the student's own outputs) that chases the shifting student distribution.
   This is the VSD/DMD two-network structure; the `−s_fake` term is the anti-blur force.
 
-### D2 — marginal teacher score (DONE; THIS is the contribution)
-The *consistent* teacher `p'` is a two-hop marginal (a mixture, one simple teacher per
-middle `v1`):
+### D2 — Monte-Carlo–marginalized DMD (THIS is the contribution)
+
+> **CORRECTED to Hyunwoo's written branch.** See `HYUNWOO_RECONCILIATION.md`. An earlier
+> draft put the marginal on the *teacher* (average two-video arrows over middles). Hyunwoo's
+> `counterfactual.txt` (lines 40–43) puts the marginal on the **student**, with a **direct**
+> teacher. Follow that.
+
+The marginalized object is the **student** joint, marginalized over the middle `v1`:
 
 ```
-p'(v2|v0) = ∫ p(v2|v0,v1) p(v1|v0) dv1
+p'(v2|v0) = ∫ q_θ(v2|v0,v1) p(v1|v0) dv1
 ```
 
-Its arrow is the **posterior-weighted average of two-video arrows over middles**:
+DMD matches this to the **direct** released teacher `p(v2|v0)`:
+`min_θ D_KL( p'(v2|v0) || p(v2|v0) )`. So:
 
-```
-s_real = ∇_{v2} log p'(v2|v0) = E_{v1 ~ p(v1|v2,v0)} [ ∇_{v2} log p(v2|v0,v1) ]
-```
+- `s_real = ∇_{v2} log p(v2|v0)` — a **single** frozen-SPT call, one source = the real `v0`.
+  No averaging over middles. In-distribution (v0 is real footage).
+- `s_fake = ∇_{v2} log p'(v2|v0)` — the **marginal student score**, obtained by the MSE
+  trick: train a **one-source** fake-score net conditioned on `v0` ONLY (hide `v1`) via
+  denoising-MSE on the student's `v2` samples. Least-squares with `v1` hidden returns the
+  average over `v1` = the marginal score. Conditioning the net on `(v0,v1)` would give a
+  *conditional* score — the wrong object.
 
-"Consistent arrow = average of two-video arrows over middles, weighted by how well each
-middle fits." **In code:** call the frozen two-video SPT teacher several times with
-different middle videos `v1`, read each noise/velocity prediction (= each two-video arrow),
-and average them.
+**Novelty:** the Monte-Carlo marginalization on the student side (`counterfactual.txt` L43,
+"nobody has tried monte-carlo marginalized DMD").
 
-**Noise-level version (needed for real DMD):** identical derivation with `t` on `v2`, so the
-posterior conditions on the *noised* `v2,t`:
-`E_{v1 ~ p(v1|v2,t,v0)} [ ∇_{v2,t} log p_t(v2,t|v0,v1) ]`.
+**Bias note:** the prior-vs-posterior worry does NOT arise here — the student marginal is
+*defined* by `p(v1|v0)`, so sampling `v1 ~ p(v1|v0)` and hiding it is the exact generative
+process; the MSE optimum is the true marginal score, no posterior reweighting.
 
-**OPEN SUBTLETY (raise with Hyunwoo, do not silently pick one):** the exact estimator
-averages over the **posterior** `p(v1|v2,t,v0)`; the cheap recipe samples the **prior**
-`p(v1|v0)` — which is biased. The **crossing constraint** (middles share a (camera,
-world-time) point with `v2`) is what's meant to make the cheap version safe. There is a
-tension between two artifacts: the "transcript trick" (regression optimum = conditional
-expectation = unbiased posterior average) vs. the doc's prior-sample-and-average (biased).
-For a first implementation, prior-sampling with crossing-constrained middles is the
-pragmatic choice, but **mark it as an approximation in code comments.**
+**Only the STUDENT is N-source.** Teacher and fake-score net both stay one-source.
 
 ### D3 — stitching score transport (DONE)
 Consistency alone has a cheat: all videos collapse to the same gray blur (two blurs
@@ -260,16 +261,16 @@ Build the scaffolding the release omits, *without* committing to the wrong objec
   unfrozen modules and zero/None on frozen ones.** Use a tiny toy batch.
 
 **Rung 2 — The DMD distillation loop (the actual method). THREE SPT instances.**
-This realizes D1 + D2. Structure per step:
-- **Student `G_θ`** (trainable SPT): generates videos (few-step).
-- **Frozen teacher** (for `s_real`): the two-video SPT. To get D2's *marginal* score, call
-  it **multiple times with different middle videos `v1`** and **average** the
-  noise/velocity predictions. (First version: sample `v1` from the prior with
-  crossing-constrained trajectories; comment it as the biased-but-pragmatic approximation;
-  the posterior-correct version is the open question for Hyunwoo.)
-- **Online fake-score net** (for `s_fake`): a third SPT instance trained online with
-  **denoising-MSE on the student's current outputs** (THIS is the only place plain-MSE
-  lives). It must keep chasing the moving student distribution.
+This realizes D1 + D2 (Hyunwoo's direct-teacher / student-marginal branch). Per step:
+- **Student `G_θ`** (trainable, **N-source** SPT conditioning on `(v0,v1)`): generates `v2`
+  (few-step). Sampling `v1 ~ p(v1|v0)` from the middle bank realizes the marginal
+  `p'(v2|v0)`.
+- **Frozen teacher** (for `s_real`): the released SPT called **once**, one source = the real
+  `v0`, target = `v2`. `s_real = ∇ log p(v2|v0)`. No averaging over middles.
+- **Online fake-score net** (for `s_fake`): a **one-source** SPT (conditioned on `v0`,
+  `v1` hidden) trained online with **denoising-MSE on the student's current `v2` outputs**
+  (THIS is the only place plain-MSE lives). By the MSE trick its optimum is the marginal
+  student score `∇ log p'(v2|v0)`. It must keep chasing the moving student distribution.
 - **Student update:** detached surrogate `stop-grad(s_fake − s_real)ᵀ · G_θ(z)` →
   `loss.backward()`. (D1.)
 - **Score-net update:** separate optimizer step on the fake-score net via its denoising loss.

@@ -433,24 +433,17 @@ A fake-score net conditioned on one sampled `v1` is not really enough.
 
 ### 9.3 Practical Coding Rule
 
-Do not hide this choice deep in the training code.
-
-Make a simple switch:
-
-```text
-score_mode = "marginal_teacher"
-or
-score_mode = "direct_teacher"
-```
-
-Then implement a `ScoreProvider` object that decides how to compute:
+**RESOLVED (see `HYUNWOO_RECONCILIATION.md`): use `direct_teacher`.** Hyunwoo's
+`counterfactual.txt` puts the marginalization on the student side:
 
 ```text
-v_real
-v_fake
+v_real = teacher velocity, source = real v0   (single call)
+v_fake = one-source fake-score net, v1 HIDDEN (marginal student score via MSE trick)
 ```
 
-That way, if Hyunwoo says "use the other interpretation," you do not rewrite everything.
+Only the student conditions on `(v0, v1)`; the teacher and fake-score net are one-source. A
+`ScoreProvider` wrapper is fine for testability, but the mode is fixed — Option A
+(`marginal_teacher`) above is retired.
 
 ## 10. What Each New Code Piece Should Do
 

@@ -244,10 +244,14 @@ Concretely [SLACK]:
 >   pressure comes from forcing the student's *marginal-over-middles* to match it, so the hard
 >   object is `s_fake` (the marginalized student score, with the diffusion caveat above).
 >
-> **Status: OPEN — confirm with Hyunwoo which side carries the marginalization (folded into
-> Open Q1).** [MEETING ~37:11] leans toward the direct-teacher reading ("`P` = the frozen
-> 2-video SPT; `P_fake` = the autoregressive student"), while [HANDOFF] D2 explicitly builds the
-> marginal teacher and calls it "the contribution." Do not silently assume they are the same.
+> **Status: RESOLVED to the DIRECT-TEACHER / student-marginal branch** (see
+> `HYUNWOO_RECONCILIATION.md`). Hyunwoo's written `counterfactual.txt` (L40–43) and [MEETING
+> ~37:11] ("`P` = frozen 2-video SPT; `P_fake` = the autoregressive student") both put the
+> marginal on the **student**: teacher = direct `p(v2|v0)` (single source=`v0` call);
+> `s_fake` = marginal student score via the MSE trick, i.e. a **one-source** fake-score net
+> conditioned on `v0` with `v1` hidden. The [HANDOFF] D2 marginal-teacher build (averaging
+> teacher arrows over middles) is retired. `Problem Statement.txt` D2 is Akshata's derivation
+> of the other branch and is superseded here. Only the STUDENT is N-source.
 
 ---
 
@@ -377,14 +381,22 @@ must be read carefully under diffusion.**
 - **Order invariant:** latents, camera, time all concatenated in the SAME `[tgt, src]` order.
   Any N-video extension MUST use one canonical ordering at every concat site, or video i's
   conditioning lands on video j's tokens (silent bug, no error).
-- **[CORRECTED — RoPE is index-based, NOT world-coordinate-based.]** `precompute_freqs_cis`
-  uses `torch.arange(end)` — sequence indices only. Two patches at the same world point but
-  different sequence positions get *different* RoPE. **The crossing constraint cannot ride on
-  RoPE**; world info enters only through the additive **camera embedding** (or must be enforced
-  via the loss). ⚠️ **[MEETING 3:31–4:47]** Hyunwoo verbally assumed the *opposite* ("same 3D
-  rope/world position for two videos at the same timestamp, distinguished only by camera
-  embedding"). The **code wins** — RoPE is positional. His operational conclusion still holds
-  (camera embedding distinguishes views), just not via RoPE. (**Open Q6.**)
+- **[RoPE — index-based in code; Hyunwoo's fix: feed explicit 3D token positions.]**
+  `precompute_freqs_cis` uses `torch.arange(end)` — the freqs are gathered by *array position*
+  (`self.freqs[0][:f]` etc.), so two patches at the same world point but different sequence
+  positions currently get *different* RoPE. ⚠️ **[SLACK]** Hyunwoo's directive on the DiT
+  architecture: "Just use pure DiT... they already have 3D RoPE. **Some implementations put RoPE
+  based on the array shape. In that case you may have to explicitly feed the 3D position of each
+  token.**" SPT is exactly that array-shape case. **So the crossing constraint CAN and should
+  ride on RoPE** — by replacing the `arange`-based freq gather with an explicit per-token 3D
+  position (temporal/world index), so tokens sharing a world point across videos get consistent
+  positional encoding. This *supersedes* the earlier "world info enters only via camera
+  embedding" claim: use **both** — explicit-position RoPE for the shared-world geometry, plus the
+  additive camera embedding. This reconciles [MEETING 3:31–4:47] (Hyunwoo assumed same 3D RoPE
+  for two videos at the same world point) with the code: it wasn't automatic, but it is the
+  intended design once you feed positions explicitly. (Concrete edit: index `self.freqs`
+  by an explicit position tensor in `WanModel.forward` / `model_fn_wan_video`, not by `:f`.)
+  **Detail to confirm Thursday.** (**Q6.**)
 - **Zero-init trick:** new conditioning modules start as no-ops so fine-tuning begins at
   pretrained behavior and "turns on" gradually. In `DiTBlock.__init__` (`:279–282`):
   `cam_encoder` weights/bias zeroed, `projector = torch.eye(dim)`, zero bias. **Template for
@@ -408,10 +420,11 @@ a target on exactly one `source_video`** (`:686`). Resolution that keeps the met
   OOD at first; the DMD loss fine-tunes it in (see §9 OOD reassurance). **Fake-score net** = a
   second extended SPT mirroring the student.
 - This is exactly [HANDOFF/MEETING]'s "teacher caps at 2, student generates 3+, D4 pairwise."
-- ⚠️ **Decision 0 assumes the marginal-teacher (HANDOFF) reading of D2** (`s_real` averaged over
-  middles `v1` fed as the 1-source). If Hyunwoo confirms the **direct-teacher (SLACK)** reading
-  instead (§4.5), the teacher becomes a single `p(v2|v0)` call (source = `v0`) and the
-  marginalization moves into `s_fake`/the student — revisit this block accordingly. (Open Q1a.)
+- ✅ **RESOLVED (Hyunwoo's `counterfactual.txt`): direct-teacher / student-marginal branch.**
+  Teacher = a single `p(v2|v0)` call (frozen SPT, source = the real `v0`). `s_fake` = the
+  marginal student score via the MSE trick → a **one-source** fake-score net conditioned on
+  `v0` with `v1` hidden. **Only the student is N-source**; the teacher and fake-score net stay
+  one-source. See `HYUNWOO_RECONCILIATION.md`.
 
 ### The three N-video edit sites (Rung 4; NOT the first task) [HANDOFF, verified CODE]
 1. **Fusion** `:730`: `torch.cat([latents, source_latents], dim=2)` → cat N sources in
@@ -510,9 +523,11 @@ The code is under `spacetimepilot/model/` and `spacetimepilot/wan/` (the **[HAND
    grad-checkpointing, throwaway flow-matching MSE just to exercise the graph — **NOT the
    objective**).
 2. **Rung A** — N-source architecture (three edit sites; no new modules).
-3. **Rung 2** — DMD loop (D1 + D2): three SPT instances (student, frozen 1-source teacher on
-   pairs for `s_real` via marginal averaging, online fake-score net for `s_fake`). Gate K=1
-   (vanilla 2-source DMD) before K>1 (the marginal contribution).
+3. **Rung 2** — DMD loop (D1 + D2, direct-teacher branch): three SPT instances (N-source
+   student; frozen 1-source teacher giving `s_real = ∇log p(v2|v0)` via a single source=`v0`
+   call; online **1-source** fake-score net conditioned on `v0` with `v1` hidden, giving
+   `s_fake` = marginal student score by the MSE trick). Gate K=1 before K>1 (K = Monte-Carlo
+   middle samples on the student side).
 4. **Rung 3** — stitching term (D3): strip `x=Wv`, `s_x = W·s_v`, anti-blur. Ablation must
    restore blur.
 5. **Rung 4/5** — N-video + pairwise-window scaling (D4); watch drift.
@@ -539,8 +554,12 @@ The code is under `spacetimepilot/model/` and `spacetimepilot/wan/` (the **[HAND
 - **Q4 — detach vs backprop through the middle `v1`** in the teacher path.
 - **Q5 — few-step student availability** — distill one ourselves, or unroll the sampler with
   backprop-through-last-step?
-- **Q6 — crossing-constraint enforcement** given RoPE is index-based — via camera embedding or
-  via loss?
+- **Q6 — crossing-constraint enforcement.** ✅ **[SLACK] partly resolved:** ride it on RoPE by
+  **feeding explicit 3D token positions** (SPT's RoPE is array-shape-based), *plus* the camera
+  embedding. Which exact positions/normalization to feed = detail to confirm Thursday.
+- **Q7 — crossing point / camera trajectory choice.** ✅ **[SLACK] resolved:** "the camera
+  trajectory needs to be **heuristically chosen**." Not a learned/training-stage-dependent
+  schedule — pick fixed crossing trajectories by hand.
 
 ---
 

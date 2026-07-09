@@ -44,6 +44,7 @@ result_for_paper/
 evaluation/evaluation_results/
 evaluation/example_videos/
 log/
+logs/
 wandb/
 
 # Attention Maps & Visualizations

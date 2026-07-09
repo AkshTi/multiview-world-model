@@ -858,22 +858,22 @@ predict the averaged/marginalized velocity when `v1` is hidden.
 
 ### 7.3 What To Do About Q1 In Code
 
-Do not hard-code one interpretation deep in the training loop.
-
-Implement a `score_provider` abstraction with two modes:
+**RESOLVED (Hyunwoo's `counterfactual.txt`; see `HYUNWOO_RECONCILIATION.md`).** Implement the
+`direct_teacher` branch only. The `marginal_teacher` branch below is retired — kept for context.
 
 ```text
-marginal_teacher:
+direct_teacher (USE THIS):
+    s_real = teacher(target=x_t, source=v0)          # single call, source = real v0
+    s_fake = fake_score(target=x_t, source=v0)       # ONE-source net, v1 HIDDEN
+                                                     # optimum = marginal student score (MSE trick)
+
+marginal_teacher (RETIRED):
     s_real = average teacher(target=x_t, source=v1_k)
     s_fake = fake_score(target=x_t, sources=(v0, v1))
-
-direct_teacher:
-    s_real = teacher(target=x_t, source=v0)
-    s_fake = marginalized-student score estimate
 ```
 
-At first, you can implement the marginal-teacher mode because it matches the handoff plan. But the
-code should make the Q1 choice explicit in config/logs/checkpoints.
+Only the **student** is N-source. The teacher and fake-score net are one-source. Record the
+branch in config/logs/checkpoints.
 
 ## 8. The Crossing Constraint
 

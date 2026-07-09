@@ -209,6 +209,7 @@ class WanModel(torch.nn.Module):
                 y: Optional[torch.Tensor] = None,
                 use_gradient_checkpointing: bool = False,
                 use_gradient_checkpointing_offload: bool = False,
+                frame_positions: Optional[torch.Tensor] = None,
                 **kwargs,
                 ):
         t = self.time_embedding(
@@ -222,9 +223,18 @@ class WanModel(torch.nn.Module):
             context = torch.cat([clip_embdding, context], dim=1)
         
         x, (f, h, w) = self.patchify(x)
-        
+
+        # RoPE frame axis. Default (frame_positions=None) is the released array-index
+        # convention: positions 0..f-1, i.e. views are stacked sequentially in time.
+        # For the N-source world model each view should instead carry the SAME time axis
+        # and differ in camera/space — pass explicit per-token frame positions here.
+        # Exact 3D-position convention is the open Thursday item; keep this a pure hook.
+        if frame_positions is None:
+            frame_freqs = self.freqs[0][:f]
+        else:
+            frame_freqs = self.freqs[0][frame_positions.to(self.freqs[0].device)]
         freqs = torch.cat([
-            self.freqs[0][:f].view(f, 1, 1, -1).expand(f, h, w, -1),
+            frame_freqs.view(f, 1, 1, -1).expand(f, h, w, -1),
             self.freqs[1][:h].view(1, h, 1, -1).expand(f, h, w, -1),
             self.freqs[2][:w].view(1, 1, w, -1).expand(f, h, w, -1)
         ], dim=-1).reshape(f * h * w, 1, -1).to(x.device)
@@ -297,28 +307,35 @@ class DiTBlock(nn.Module):
             self.modulation.to(dtype=t_mod.dtype, device=t_mod.device) + t_mod).chunk(6, dim=1)
         input_x = modulate(self.norm1(x), shift_msa, scale_msa)
 
-        # encode time embedding
+        # encode time embedding.
+        # 'time_embedding_src' is a single 81-frame tensor (released 1-source path) or a
+        # list of them (N-source). Each source is embedded + downsampled independently
+        # (the causal downsampler must not mix across source boundaries), then all
+        # per-view 21-frame blocks are concatenated after the target.
         src_time_embedding = frame_time_embedding['time_embedding_src']
         tgt_time_embedding = frame_time_embedding['time_embedding_tgt']
+        src_time_list = (list(src_time_embedding)
+                         if isinstance(src_time_embedding, (list, tuple))
+                         else [src_time_embedding])
 
-        src_time_embedding = self.frame_time_embedding(
-            sinusoidal_embedding_1d(self.freq_dim, src_time_embedding))
-        tgt_time_embedding = self.frame_time_embedding(
-            sinusoidal_embedding_1d(self.freq_dim, tgt_time_embedding))
+        def _embed_time(s):
+            return self.temporal_downsampler(
+                self.frame_time_embedding(sinusoidal_embedding_1d(self.freq_dim, s)))
 
-        # temporal downsampling: 81 -> 21 frames
-        src_time_embedding = self.temporal_downsampler(src_time_embedding)
-        tgt_time_embedding = self.temporal_downsampler(tgt_time_embedding)
+        tgt_time_embedding = _embed_time(tgt_time_embedding)
+        src_time_down = [_embed_time(s) for s in src_time_list]
 
-        frame_time_embedding = torch.cat([tgt_time_embedding, src_time_embedding], dim=1)  # [B, 42, dim]
+        frame_time_embedding = torch.cat([tgt_time_embedding, *src_time_down], dim=1)  # [B, 21*(1+N), dim]
         frame_time_embedding = frame_time_embedding.unsqueeze(2).unsqueeze(3).repeat(1, 1, 30, 52, 1)
         frame_time_embedding = rearrange(frame_time_embedding, 'b f h w d -> b (f h w) d')
         input_x = input_x + frame_time_embedding
 
-        # encode camera
+        # encode camera (same 1-source-or-list convention as time).
+        src_cam = cam_emb["src"]
+        src_cam_list = (list(src_cam) if isinstance(src_cam, (list, tuple)) else [src_cam])
         cam_emb_tgt = self.cam_encoder(cam_emb["tgt"])
-        cam_emb_src = self.cam_encoder(cam_emb["src"])
-        cam_emb = torch.cat([cam_emb_tgt, cam_emb_src], dim=1)
+        cam_emb_src = [self.cam_encoder(c) for c in src_cam_list]
+        cam_emb = torch.cat([cam_emb_tgt, *cam_emb_src], dim=1)
 
         cam_emb = cam_emb.unsqueeze(2).unsqueeze(3).repeat(1, 1, 30, 52, 1)
         cam_emb = rearrange(cam_emb, 'b f h w d -> b (f h w) d')

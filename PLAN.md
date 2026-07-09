@@ -83,31 +83,27 @@ source_latents = self.encode_video(source_video, **tiler_kwargs)
 latents_input = torch.cat([latents, source_latents], dim=2)
 ```
 
-Working default, matching the handoff/derivation:
+**RESOLVED to Hyunwoo's written branch (`counterfactual.txt` L40–43; see
+`HYUNWOO_RECONCILIATION.md`). Direct teacher, student-side Monte-Carlo marginalization:**
 
-- **Frozen teacher:** released one-source SPT, used pairwise. A teacher arrow is
-  `grad_{v2} log p(v2 | v1)`: target is noised/generated `v2`, source is one cached middle `v1`.
-  This keeps teacher inputs in-distribution.
-- **Student:** extended SPT that conditions target `v2` on two sources `(v0, v1)`. This is OOD
-  relative to the checkpoint, so it must pass a 2-source forward/shape/quality gate before DMD.
-- **Fake-score net:** same 2-source extension as the student, trained online to estimate
-  `grad log q_theta(v2 | v0, v1)`.
+- **Frozen teacher (`s_real`):** released SPT called **once**, one source = the real `v0`,
+  target = `v2`. `s_real = grad_{v2} log p(v2 | v0)`. No averaging over middles. This is the
+  "clean target"; `v0` is real footage, so it is in-distribution.
+- **Student:** extended SPT conditioning target `v2` on two sources `(v0, v1)`. OOD relative
+  to the checkpoint, so it must pass a 2-source forward/shape/quality gate before DMD. The
+  student marginal `p'(v2|v0) = ∫ q_theta(v2|v0,v1) p(v1|v0) dv1` is realized by sampling
+  middles `v1 ~ p(v1|v0)` from the bank.
+- **Fake-score net (`s_fake`):** a **one-source** net conditioned on `v0` ONLY (`v1` hidden),
+  trained online by denoising-MSE on the student's `v2` samples. By the MSE trick its optimum
+  is the marginal student score `grad log p'(v2|v0)`. Do NOT condition it on `(v0,v1)` — that
+  gives a conditional score, the wrong object.
 
-Approximation to be explicit about: this is not the ideal teacher `p(v2 | v0, v1)`. We use
-`p(v2 | v1)` and rely on `v1 ~ p(v1 | v0)` plus crossing constraints to carry information from
-`v0`.
+So **only the student is N-source**; teacher and fake-score net stay one-source. The
+prior-vs-posterior bias does not arise (the student marginal is defined by `p(v1|v0)`).
 
-Research fork from `RESEARCH_CONTEXT.md` §4.5:
-
-- **Marginal-teacher version:** `s_real` averages K teacher calls `p(v2 | v1^(k))`. This is the
-  current working default because it matches the handoff D2 plan.
-- **Direct-teacher version:** `s_real` is a single teacher call `p(v2 | v0)`. The marginal over
-  middles belongs to the student/fake-score side, so `s_fake` must estimate the score of the
-  marginalized student joint. This is closer to Hyunwoo's Slack wording.
-
-Implementation rule: do not bury this choice inside the training loop. Build a `score_provider`
-interface with two modes (`marginal_teacher`, `direct_teacher`) so Q1 can be resolved by changing
-configuration rather than rewriting Rung 2.
+A `score_provider` interface may still wrap `s_real`/`s_fake` for testability, but the mode is
+fixed to Hyunwoo's `direct_teacher` branch; the marginal-teacher branch is retired (kept only
+as a historical note in `RESEARCH_CONTEXT.md` §4.5).
 
 ## Flow Matching: Velocity To Score
 
@@ -146,9 +142,14 @@ Required edit sites in `spacetimepilot/model/spacetimepilot.py`:
 3. `DiTBlock.forward`: camera concat currently `torch.cat([cam_emb_tgt, cam_emb_src], dim=1)`.
 4. `model_fn_wan_video`: replace fixed `{"tgt": ..., "src": ...}` glue with ordered source lists
    or explicit keys that cannot reorder silently.
+5. **RoPE positions (per Hyunwoo's Slack):** the freqs are gathered by array index
+   (`self.freqs[0][:f]`). To let the crossing constraint ride on RoPE, index `self.freqs` with an
+   **explicit per-token 3D/temporal position** so tokens at the same world point across videos get
+   the same positional encoding. Keep the camera embedding too. (Exact position convention =
+   confirm Thursday; wire the plumbing to accept explicit positions now.)
 
-No new module should be added first. If a new view-ID/crossing module becomes necessary later, it
-must be zero-initialized and gated behind an ablation.
+No new *learned* module should be added first. If a new view-ID/crossing module becomes necessary
+later, it must be zero-initialized and gated behind an ablation.
 
 ## Rung 0 - Repo, Checkpoints, And Inference Shape Probe
 
@@ -252,16 +253,15 @@ Per step:
      step with grad (DMD2-style) to keep memory bounded.
    - Sweep down from the known-working inference step count; do not start by assuming 4 steps.
 3. Sample DMD noise level `sigma`, noise `x0_hat` to `x_t`.
-4. Real score `s_real`, chosen by Q1 mode:
-   - `marginal_teacher`: frozen one-source SPT with `source=v1`, target=`x_t`, action=`a2`.
-   - `direct_teacher`: frozen one-source SPT with `source=v0`, target=`x_t`, action=`a2`.
+4. Real score `s_real` (direct teacher, Hyunwoo's branch):
+   - Frozen one-source SPT with `source=v0`, target=`x_t`, action=`a2`. A single call.
    - Run under `no_grad`; add CFG only after sign/variance tests pass.
-5. Fake score `s_fake`, also Q1-dependent:
-   - `marginal_teacher`: fake-score SPT with sources `(v0, v1)` and target=`x_t`.
-   - `direct_teacher`: fake-score estimate must represent the **marginalized student** score, not
-     merely a single conditional `(v0, v1)`. First practical version can still use one `v1`, but
-     label it as a biased approximation; the principled version uses the regression trick from
-     `RESEARCH_CONTEXT.md` §4.1.
+5. Fake score `s_fake` (marginal student score via the MSE trick):
+   - **One-source** fake-score net conditioned on `v0` ONLY (`v1` hidden), target=`x_t`.
+     Trained on the student's `v2` samples, so its optimum is the marginalized student score
+     `grad log p'(v2|v0)`. Do NOT feed it `v1`.
+   - The Monte-Carlo marginalization comes from the student having sampled `v1 ~ p(v1|v0)` in
+     step 2, then the fake-score net hiding `v1` — this is exact, not a biased approximation.
    - During student update, fake-score net is evaluated without parameter grads because the DMD
      vector is detached.
 6. Student loss:
@@ -286,25 +286,20 @@ Gates:
 - Fake-score loss decreases on cached student outputs.
 - Student samples do not immediately collapse or explode.
 
-## Rung 2b - K>1 Marginal Teacher Approximation
+## Rung 2b - K>1 Monte-Carlo Marginalization (student side)
 
-Only after K=1 is stable and only for the `marginal_teacher` mode:
+Only after K=1 is stable. K>1 does NOT touch the teacher (it stays a single direct `p(v2|v0)`
+call). K is the number of Monte-Carlo middle samples `v1 ~ p(v1|v0)` used to reduce variance in
+the **student marginal** and its fake-score estimate:
 
-- Load K crossing-constrained middles from the middle bank.
-- Run teacher pairwise for each `v1^(k)` sequentially under `no_grad`.
-- Average velocities or scores consistently after converting with the same `sigma`.
+- Per step, draw K crossing-constrained middles from the bank; generate one `v2` per middle.
+- Train the one-source fake-score net on all K `v2` samples with `v1` hidden — more samples =
+  lower-variance estimate of `grad log p'(v2|v0)` (the MSE-trick optimum is unchanged).
+- The student loss averages the K per-sample DMD vectors.
 
-Important: this is a prior-sampled approximation to the posterior marginal score, not the exact D2
-estimator. Track:
-
-- variance of teacher arrows across K;
-- change in generated consistency as K increases;
-- whether K>1 helps more for crossing-constrained banks than random middle banks.
-
-If K averaging is noisy, unhelpful, or Hyunwoo confirms the direct-teacher reading, promote the
-regression trick to the next rung: train a
-separate regressor from `(x_t, v0)` to teacher velocities so the conditional-mean optimum estimates
-the posterior average.
+Track: fake-score estimator variance vs K; consistency vs K; whether crossing-constrained middles
+beat random middles. There is no prior-vs-posterior bias to correct here — `v1 ~ p(v1|v0)` is the
+exact generative process being marginalized.
 
 ## Rung 3 - Stitching Term (D3)
 
@@ -342,19 +337,19 @@ This is an empirical bet, not a theorem. Measure drift by chain distance:
 2. Crux tests: flow score conversion and DMD sign.
 3. Rung 1a: one-source training harness with checkpointed forward.
 4. Rung A + Rung 1b: 2-source forward/training smoke test.
-5. Q1 decision gate: implement score-provider modes or get Hyunwoo's answer before hard-coding.
+5. (Q1 already resolved to direct-teacher / student-marginal — see HYUNWOO_RECONCILIATION.md.)
 6. Middle-bank generation and crossing validation.
-7. Rung 2: K=1 DMD loop.
-8. Rung 2b: K>1 approximate marginal teacher, if still using marginal-teacher mode.
+7. Rung 2: K=1 DMD loop (direct teacher, one-source fake-score net hiding v1).
+8. Rung 2b: K>1 Monte-Carlo student-side marginalization.
 9. Rung 3: stitching term.
 10. Rung 4: N-view pairwise windows.
 
 ## Open Questions For Hyunwoo
 
-1. Exact Q1/D2 placement: should `s_real` be the marginal-teacher average over middles, or the
-   direct teacher `p(v2 | v0)` with the marginalization moved into `s_fake`?
-2. If using marginal-teacher mode, is prior-sampled `v1 ~ p(v1 | v0)` acceptable, or should we
-   prioritize the regression/posterior-average estimator?
+1. (RESOLVED per `counterfactual.txt`: direct teacher `p(v2|v0)`, marginalization on the
+   student side via the MSE trick. No longer open.)
+2. (RESOLVED: no prior-vs-posterior issue on this branch — the student marginal is defined by
+   `p(v1|v0)`, so hiding `v1` in the fake-score net is exact.)
 3. Crossing constraint: what exact normalized camera/time equality is sufficient, given SPT's
    relative camera embeddings?
 4. Few-step student: should we first distill a few-step generator, or is last-step-gradient DMD2
