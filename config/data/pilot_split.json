@@ -1,0 +1,312 @@
+{
+  "schema": 1,
+  "train": [
+    {
+      "v0_id": "video_0",
+      "video_path": "demo_videos/videos/video_0.mp4",
+      "caption": "The video opens with a vibrant street scene where a group of people are gathered. The crowd is diverse"
+    },
+    {
+      "v0_id": "video_1",
+      "video_path": "demo_videos/videos/video_1.mp4",
+      "caption": "The video opens with a scene of a person in the center"
+    },
+    {
+      "v0_id": "video_2",
+      "video_path": "demo_videos/videos/video_2.mp4",
+      "caption": "The video features a single rhinoceros"
+    },
+    {
+      "v0_id": "video_3",
+      "video_path": "demo_videos/videos/video_3.mp4",
+      "caption": "The video features a tiger with orange fur and black stripes"
+    },
+    {
+      "v0_id": "video_4",
+      "video_path": "demo_videos/videos/video_4.mp4",
+      "caption": "The video features a person wearing a black helmet and dark clothing, riding a mountain bike through a forested area. The rider is seen navigating a narrow, muddy trail surrounded by dense greenery, including moss-covered trees and shrubs. The bike appears to be a full-suspension model, suitable for off-road conditions. The rider's posture suggests they are experienced, maintaining balance and control as they maneuver through the uneven terrain."
+    },
+    {
+      "v0_id": "video_5",
+      "video_path": "demo_videos/videos/video_5.mp4",
+      "caption": "The video opens with a man standing on a rocky shore, facing the sea. He is wearing a white t-shirt and dark pants. The sky is clear with a hint of dusk, suggesting it might be early evening. The man is holding a remote control in his right hand and appears to be operating a drone. The drone is black with four rotors and is equipped with a camera. In the background, there is a small island or rock formation visible on the horizon. The waves are gently lapping against the rocks, and the overall atmosphere is calm and serene."
+    },
+    {
+      "v0_id": "video_6",
+      "video_path": "demo_videos/videos/video_6.mp4",
+      "caption": "The video opens with a view of a suburban street on an overcast day. The road is wet, suggesting recent rain, and there are puddles scattered across the pavement. The trees lining the street have autumn foliage, with leaves in shades of red, orange, and yellow. A person wearing a purple jacket, gray pants, and a white helmet is rollerblading down the street. They appear to be in motion, gliding smoothly on their rollerblades. There are parked cars on the side of the road, and no other people or moving vehicles are visible in the scene."
+    },
+    {
+      "v0_id": "video_7",
+      "video_path": "demo_videos/videos/video_7.mp4",
+      "caption": "The video features a person sitting on the floor in what appears to be a living room. The individual is wearing a striped green and black t-shirt and dark pants. They are surrounded by various objects, including a plastic container with compartments, which seems to hold small items like buttons or beads. The person is engaged in an activity that involves sorting or organizing these items. The background includes wooden furniture and electronic equipment, suggesting a domestic setting."
+    },
+    {
+      "v0_id": "video_8",
+      "video_path": "demo_videos/videos/video_8.mp4",
+      "caption": "The video opens with a shot of a ballet dancer in a white tutu and a dark leotard, performing on a stage. The stage is dimly lit, with the primary light source coming from above, casting a spotlight on the dancer. The background reveals an empty theater with rows of seats and multiple levels of balconies, all illuminated by warm, ambient lighting. The dancer executes a series of ballet movements, including spins and arm extensions, demonstrating grace and precision. The color palette of the scene is dominated by the stark contrast between the dancer's white costume and the darker tones of the stage and theater interior."
+    },
+    {
+      "v0_id": "video_9",
+      "video_path": "demo_videos/videos/video_9.mp4",
+      "caption": "The video opens with a shot of an empty stage, dimly lit with a spotlight shining down. The stage is expansive and appears to be in a theater, as the background reveals rows of seats and multiple levels of balconies, all shrouded in darkness. The lighting focuses on the center of the stage, creating a dramatic effect. A ballet dancer, dressed in a white tutu and ballet shoes, enters the frame from the left side. She performs a series of ballet movements, including pirouettes and arabesques, with precision and grace. Her movements are fluid and controlled, showcasing her skill and training. The stage floor is reflective, adding to the visual appeal of the performance."
+    },
+    {
+      "v0_id": "video_10",
+      "video_path": "demo_videos/videos/video_10.mp4",
+      "caption": "The video opens with a view of an outdoor area, likely a park or recreational space, featuring trees, benches, and a blue structure in the background. The ground is paved, and there are scattered leaves indicating it might be autumn. A person wearing a striped shirt and jeans is seen skateboarding towards the camera. They perform a trick by jumping over a bench and landing on the other side. The skateboarder's movements are fluid, and they maintain balance throughout the trick. The lighting suggests it is either early morning or late afternoon, casting long shadows on the ground."
+    },
+    {
+      "v0_id": "video_11",
+      "video_path": "demo_videos/videos/video_11.mp4",
+      "caption": "The video features a person standing outdoors, likely in a park or garden setting. The individual is wearing a maroon t-shirt and appears to be performing a series of hand gestures or movements. The background includes greenery such as trees and shrubs, and there's a glimpse of a fence and a clear sky. The lighting suggests it's daytime with ample sunlight."
+    },
+    {
+      "v0_id": "video_12",
+      "video_path": "demo_videos/videos/video_12.mp4",
+      "caption": "The video opens with a wide shot of a vast desert landscape, characterized by red and orange rock formations that rise majestically against a cloudy sky. The ground is covered with sparse vegetation, primarily low-lying shrubs. In the foreground, there is a single individual walking from left to right across the frame. The person is dressed in a red top and dark pants, carrying a backpack and using a walking stick for support. The lighting suggests it could be either early morning or late afternoon, casting long shadows on the ground."
+    },
+    {
+      "v0_id": "video_13",
+      "video_path": "demo_videos/videos/video_13.mp4",
+      "caption": "The video opens with a person standing on a hilltop, overlooking a sprawling cityscape. The individual is dressed in casual attire, including a light-colored shirt and dark pants. The setting sun casts a warm glow over the scene, highlighting the contours of the hills and the urban sprawl below. The person appears to be engaged in some form of physical activity or exercise, as suggested by their dynamic posture and movement. The landscape stretches out into the distance, with buildings, roads, and natural terrain visible under the fading light of the day."
+    },
+    {
+      "v0_id": "video_14",
+      "video_path": "demo_videos/videos/video_14.mp4",
+      "caption": "The video features a person dancing in a studio with wooden floors and mirrored walls. The individual is wearing a patterned, short-sleeved shirt, ripped blue jeans, and white sneakers. They are performing various dance moves, including steps, turns, and arm movements, while facing the mirror. The studio has a few pieces of equipment, such as a black sound system and a chair, placed against the wall. The lighting in the room is soft and even, casting minimal shadows on the floor."
+    },
+    {
+      "v0_id": "video_15",
+      "video_path": "demo_videos/videos/video_15.mp4",
+      "caption": "The video features a person running through a rugged, rocky terrain. The individual is dressed in athletic attire suitable for outdoor activities, including a dark-colored t-shirt, shorts, and running shoes. They are also wearing a cap and have a backpack on their back. The environment around them is characterized by an overcast sky and a landscape dotted with rocks and shrubs, suggesting a mountainous or hilly area. The person's motion is captured in a sequence of frames, indicating movement and the act of running."
+    },
+    {
+      "v0_id": "video_16",
+      "video_path": "demo_videos/videos/video_16.mp4",
+      "caption": "The video features a person hiking through a rocky terrain. The individual is wearing a dark-colored backpack, a light-colored shirt, and shorts. They are navigating over large boulders and uneven ground, which suggests a challenging outdoor environment. The weather appears to be foggy or misty, as visibility is somewhat reduced and the atmosphere looks damp. The rocks are predominantly gray with patches of moss or lichen, indicating a natural, possibly mountainous setting. There are no other people or man-made structures visible in the frames, emphasizing the solitude and ruggedness of the landscape."
+    },
+    {
+      "v0_id": "video_17",
+      "video_path": "demo_videos/videos/video_17.mp4",
+      "caption": "The video opens with a person dressed in white, standing amidst a park setting. The individual is surrounded by fallen leaves and trees with green foliage, indicating it might be autumn. The person is performing a series of movements that resemble dance or martial arts. They are captured in various poses, including a stance with arms raised, a mid-motion twist, and a dynamic leap. The lighting suggests it's daytime with natural light illuminating the scene."
+    },
+    {
+      "v0_id": "video_18",
+      "video_path": "demo_videos/videos/video_18.mp4",
+      "caption": "The video features a person in motion, captured in a series of frames. The individual appears to be dancing or performing some form of expressive movement. They are wearing a light-colored top and dark pants, with white shoes. The setting is an outdoor path surrounded by greenery and trees with autumn foliage. The ground is covered with fallen leaves, indicating the season might be fall. The person's movements are fluid and dynamic, suggesting a sense of freedom or joy."
+    },
+    {
+      "v0_id": "video_19",
+      "video_path": "demo_videos/videos/video_19.mp4",
+      "caption": "The video features a person dancing in an outdoor setting, likely a park or a forested area. The individual is wearing a light-colored jacket, dark pants, and white shoes. They are surrounded by trees with green and yellow leaves, indicating it might be autumn. The ground is covered with fallen leaves, and the path appears to be a dirt trail. The dancer's movements are fluid and expressive, with arms extended and legs in various positions. The lighting suggests it could be daytime with natural sunlight filtering through the trees."
+    },
+    {
+      "v0_id": "video_20",
+      "video_path": "demo_videos/videos/video_20.mp4",
+      "caption": "The video features a person wearing a light yellow, long-sleeved top with a V-neckline. The individual is captured in various poses, including extending their arms outward and upward, as well as turning their head to the side. The background consists of green foliage, suggesting an outdoor setting, possibly a park or garden. The lighting indicates it's daytime with ample sunlight."
+    },
+    {
+      "v0_id": "video_21",
+      "video_path": "demo_videos/videos/video_21.mp4",
+      "caption": "The video opens with a view of a man using crutches to walk alongside a woman who is dressed in blue scrubs, suggesting she may be a healthcare professional. They are on a paved pathway beside a body of water, with a large suspension bridge visible in the background. The sky is overcast, and the lighting suggests it could be either early morning or late afternoon. The man is wearing casual clothing, including a gray sweatshirt, black shorts, and sneakers. The woman is wearing a blue scrub top and pants, along with white sneakers. Both individuals appear focused on their path, and the woman seems to be offering support or guidance to the man as he navigates his way."
+    },
+    {
+      "v0_id": "video_22",
+      "video_path": "demo_videos/videos/video_22.mp4",
+      "caption": "The video opens with a surfer, clad in a dark wetsuit, skillfully riding a wave on a yellow surfboard. The ocean is a deep blue-green, and the sky above is overcast with grey clouds, suggesting an early morning or late afternoon setting. The surfer maintains balance as they navigate the crest of the wave, which is breaking to their right. The waves are moderately sized, providing a good challenge for the surfer. The surfer's movements are fluid and controlled, indicative of experience and proficiency in the sport."
+    },
+    {
+      "v0_id": "video_23",
+      "video_path": "demo_videos/videos/video_23.mp4",
+      "caption": "The video features a man seated on a wooden stool in what appears to be a garage or workshop. He is dressed casually in a dark t-shirt, blue jeans, and brown boots. The man is holding a tablet device with both hands, which he seems to be focused on. In front of him is a motorcycle elevated on a stand, suggesting that he might be working on it or inspecting it. The motorcycle has a black color scheme with visible details such as the tires, handlebars, and part of the engine. The environment includes concrete walls, a red toolbox on the floor, and various other items typically found in a mechanic's workspace. The lighting is artificial, casting shadows on the wall behind the man, indicating an indoor setting."
+    },
+    {
+      "v0_id": "video_24",
+      "video_path": "demo_videos/videos/video_24.mp4",
+      "caption": "The video opens with a view of the ocean's surface, where sunlight filters through the water, creating a shimmering effect. The scene transitions to an underwater environment where a person is swimming. The individual appears to be wearing dark swimwear and is captured in motion, gliding through the water with their arms extended forward and legs kicking. The water is a deep blue, indicating depth and clarity. As the swimmer moves, they pass by a large, dark object that could be a rock or part of a shipwreck, covered in marine growth. The swimmer's movements are smooth and continuous, suggesting a calm and controlled swimming experience."
+    },
+    {
+      "v0_id": "video_25",
+      "video_path": "demo_videos/videos/video_25.mp4",
+      "caption": "The video features a person, likely female, wearing a brown dress with a floral pattern. She is holding a green watering can and appears to be in the process of watering plants. The setting seems to be an outdoor area, possibly a garden or backyard, as indicated by the presence of plants and a wooden structure that could be a planter box. The lighting suggests it might be evening or nighttime, given the artificial light illuminating the scene."
+    },
+    {
+      "v0_id": "video_26",
+      "video_path": "demo_videos/videos/video_26.mp4",
+      "caption": "The video features a person standing in what appears to be a studio setting with a backdrop of grey fabric and overhead lighting. The individual is wearing a white, short-sleeved crop top and blue denim jeans. They are captured in various poses, including facing the camera, turning to the side, and raising their arms above their head. The lighting is bright and even, suggesting a professional environment typically used for photography or filming."
+    },
+    {
+      "v0_id": "video_27",
+      "video_path": "demo_videos/videos/video_27.mp4",
+      "caption": "The video opens with a view of a white off-road vehicle, possibly a Land Rover, navigating through a shallow river. The vehicle is surrounded by large rocks and boulders, some partially submerged in the water. The river appears to be flowing gently, and the water level reaches just below the vehicle's wheel arches. The landscape is dominated by rugged mountains shrouded in mist or low-hanging clouds, suggesting a cold, possibly alpine environment. The sky is overcast, contributing to the overall moody atmosphere of the scene. There are no visible people or other vehicles in the immediate vicinity."
+    },
+    {
+      "v0_id": "video_28",
+      "video_path": "demo_videos/videos/video_28.mp4",
+      "caption": "A man and a woman are dancing together on a city street at dusk. The woman is wearing a yellow dress with a floral pattern and black shoes, while the man is dressed in a white shirt, dark tie, and dark pants with black shoes. They are both moving gracefully to the rhythm of the music, with the woman twirling and the man following her steps. The background features a cityscape with buildings and a distant mountain range, illuminated by the setting sun, creating a warm and romantic atmosphere. The main subjects are a man and a woman. The woman is wearing a yellow dress with a floral pattern and black shoes, while the man is dressed in a white shirt, dark tie, and dark pants with black shoes. They are dancing closely together, with the woman often twirling and the man following her movements. Their expressions and body language suggest they are enjoying the dance and are in sync with each other. The woman's movements are fluid and expressive, involving twirls and spins. The man follows her lead, moving in sync with her steps. Their dance is characterized by moderate to fast-paced movements, with the woman often leading the way. The background remains static, emphasizing the dynamic nature of their dance."
+    },
+    {
+      "v0_id": "video_29",
+      "video_path": "demo_videos/videos/video_29.mp4",
+      "caption": "A person dressed in a vibrant red suit with a yellow vest and a green shirt is seen descending a flight of stairs. The individual's attire is complemented by a bright red clown wig and a white face paint with black accents, resembling a classic clown makeup. The person's movements are dynamic and exaggerated, with arms flailing and legs kicking, suggesting a sense of urgency or excitement. The setting appears to be an urban environment, with the staircase leading to a brightly lit outdoor area, possibly a street or a public space. The person's actions are the focal point, with the background remaining static and out of focus."
+    },
+    {
+      "v0_id": "video_31",
+      "video_path": "demo_videos/videos/video_31.mp4",
+      "caption": "A man in a plaid suit jacket, white shirt, and dark tie is seen smoking a cigarette while standing next to a white police car. He is engaged in a conversation with someone off-camera, gesturing with his hands and occasionally looking at his watch. The scene takes place in an outdoor setting with several other people in the background, some of whom are dressed in formal attire. The man's movements are deliberate and expressive, involving hand gestures and occasional glances at his watch. The background remains static, with no significant changes or movements. The main subject is a man in his 40s, wearing a plaid suit jacket, white shirt, dark tie, and dark belt. He is holding a cigarette in his right hand and is seen smoking it while talking. His left hand is often raised, gesturing as he speaks. He is positioned next to a white police car, with his back to the vehicle. The man's movements are animated, involving hand gestures and occasional glances at his watch. The camera is stationary, capturing the scene from a medium shot that includes both the man and the police car in the frame."
+    },
+    {
+      "v0_id": "video_32",
+      "video_path": "demo_videos/videos/video_32.mp4",
+      "caption": "A couple is dancing in a luxurious ballroom filled with elegantly dressed guests. The man, dressed in a gray suit, and the woman, wearing a black dress, are dancing closely together, holding each other's hands and moving gracefully. The atmosphere is sophisticated, with a backdrop of elegant chandeliers, ornate decorations, and a crowd of well-dressed people enjoying the event. The couple's movements are smooth and rhythmic, with the woman's hair flowing as they twirl and sway. The background is a luxurious ballroom with ornate decorations, including chandeliers, potted plants, and elegant furniture. The room is filled with well-dressed guests, some of whom are seated at tables, while others are standing and mingling. The setting suggests a formal event, possibly a gala or a high-end party, with a focus on elegance and sophistication. The main subjects are a man and a woman dancing together. The man has dark hair and a mustache, wearing a gray suit, and the woman has her hair styled in an updo, wearing a black dress. They are holding hands and moving in close proximity, with the woman's back facing the camera at times. Their movements are fluid and synchronized, indicating a comfortable and intimate connection."
+    },
+    {
+      "v0_id": "video_33",
+      "video_path": "demo_videos/videos/video_33.mp4",
+      "caption": "A couple is seen on the deck of a large ship, embracing and enjoying a romantic moment as the ship sails through the ocean. The woman, dressed in a black dress with a white shawl, and the man, wearing a black jacket and pants, are holding each other tightly, with the woman's arms wrapped around the man's neck and the man's arms around the woman's waist. They are positioned near the railing of the ship, with the ocean and the ship's structure in the background. The scene captures the warmth and intimacy of their embrace as they look out towards the horizon, with the sun setting in the background, casting a golden hue over the entire scene. The main subjects are a couple, a woman, and a man. The woman is wearing a black dress with a white shawl, and the man is dressed in a black jacket and pants. They are standing close to each other, with the woman's arms wrapped around the man's neck and the man's arms around the woman's waist. They are positioned near the railing of the ship, facing the ocean. Their expressions are joyful and loving, and they are looking out towards the horizon. The camera is stationary, capturing the scene from a fixed angle that focuses on the couple and the ocean in the background."
+    },
+    {
+      "v0_id": "video_34",
+      "video_path": "demo_videos/videos/video_34.mp4",
+      "caption": "A man in a white shirt and suspenders sits against a stone wall in a rural setting, reading a piece of paper. He appears to be deeply focused on the content of the paper, occasionally glancing up and then back down to read. The scene is calm and contemplative, with the man's expressions reflecting his engagement with the document. The main subject is a man with gray hair, wearing a white shirt and suspenders. He is holding a piece of paper with handwritten text. The man is seated against a stone wall, with a hat and a jacket placed on the wall beside him. His posture is relaxed, and he is engaged in reading the paper, occasionally looking up and then back down to continue reading. The background consists of a rural setting with a stone wall and a grassy field. There is a hat and a jacket placed on the wall behind the man, suggesting a casual, outdoor environment. The scene is well-lit, indicating it is daytime, with natural light illuminating the area."
+    },
+    {
+      "v0_id": "video_35",
+      "video_path": "demo_videos/videos/video_35.mp4",
+      "caption": "A man in a classic trench coat and hat is seen walking through a rainy street, holding an umbrella to shield himself from the rain. He approaches a doorway, opens the door, and steps inside, leaving the rain pouring down outside. The scene is set in a classic, possibly vintage, urban environment with a wet, reflective street and a doorway leading to a dimly lit interior. The man's movements are deliberate and steady as he walks towards the doorway, opens it, and steps inside. The rain pours down continuously, creating a dynamic and somewhat chaotic visual effect. The water splashes and flows around the man as he moves, adding to the sense of urgency and haste. The background remains static, with the only movement being the rain and the man's actions. The main subject is a man dressed in a classic trench coat, hat, and gloves. He holds a black umbrella to shield himself from the rain. He walks towards a doorway, opens it, and steps inside. His movements are deliberate and purposeful, indicating a sense of urgency. The umbrella is a prominent object, held high to protect him from the rain."
+    },
+    {
+      "v0_id": "video_36",
+      "video_path": "demo_videos/videos/video_36.mp4",
+      "caption": "A man in a dark suit and tie is walking down a hallway, engaging in a conversation with another person who is partially visible. He gestures with his hands, pointing and making expressive hand movements as he talks. The hallway is well-lit with a warm, yellowish tone, and there are framed pictures and a clock on the wall. The man appears to be in a professional setting, possibly an office or a corporate building. The main subject is a man in a dark suit and tie, who is walking and gesturing with his hands as he talks. He has short hair and is smiling, indicating a friendly or positive conversation. Another person, a woman with shoulder-length hair, is walking beside him, partially visible and dressed in a beige jacket. The man's gestures are animated, suggesting he is explaining or emphasizing a point. The man in the suit is walking forward at a moderate pace, while the woman beside him is walking at a similar speed. The man's hand movements are dynamic, pointing and gesturing as he talks. The background remains static, with no significant changes or movements."
+    },
+    {
+      "v0_id": "video_37",
+      "video_path": "demo_videos/videos/video_37.mp4",
+      "caption": "A man in a black suit and a green shirt is standing in a kitchen, engaging in a conversation. He appears to be expressing himself with hand gestures, possibly emphasizing a point or explaining something. The kitchen is cluttered with various items, including a refrigerator, cabinets, and a stove. The man's expressions and gestures suggest he is explaining something important or reacting to a situation. The main subject is a man wearing a black suit and a green shirt. He is positioned centrally in the frame and is making hand gestures with his right hand. His facial expressions change throughout the video, indicating he is speaking or reacting to something. The man's movements are primarily focused on his hand gestures and facial expressions. He occasionally shifts his body slightly, but his primary actions involve moving his right hand and changing his facial expressions. The background remains static throughout the video."
+    },
+    {
+      "v0_id": "video_38",
+      "video_path": "demo_videos/videos/video_38.mp4",
+      "caption": "The video opens with a gymnast standing on a balance beam, wearing a blue leotard with sparkling details. The background features a large audience and banners displaying \"PARIS 2024\" along with the Olympic rings, indicating that this is an event related to the Paris 2024 Olympics. The gymnast performs a series of movements including balancing, turning, and leaping. The balance beam is brown with white markings, and there is a pink mat surrounding it for safety. The audience appears engaged, with some individuals taking photographs or videos."
+    },
+    {
+      "v0_id": "video_39",
+      "video_path": "demo_videos/videos/video_39.mp4",
+      "caption": "The video opens with a ballet dancer in a white tutu and ballet shoes, performing on a stage with a dark background. The dancer is executing a classical ballet pose with one arm extended and the other bent at the elbow, while her legs are elegantly positioned. The lighting highlights the dancer's form against the darkness of the stage. As the video progresses, the dancer is lifted by a male partner dressed in a dark costume, who supports her in various ballet positions. The partner's movements are fluid and precise, demonstrating strength and control. The video captures the grace and athleticism of ballet, showcasing the dancers' skill and the beauty of their art form."
+    },
+    {
+      "v0_id": "video_41",
+      "video_path": "demo_videos/videos/video_41.mp4",
+      "caption": "The video opens with two judo competitors on a mat, one wearing a blue gi and the other in white. The competitor in blue is executing a throw, lifting the opponent in white off the ground and flipping them over their back. The action takes place in an indoor sports arena, as indicated by the presence of a scoreboard, advertising banners, and spectator seating in the background. The competitors are wearing traditional judo gis, which are the uniforms used in the sport. The blue gi has a visible name tag and a number, while the white gi does not have any visible text or numbers. The mat they are on is red and yellow, typical for judo competitions."
+    },
+    {
+      "v0_id": "video_42",
+      "video_path": "demo_videos/videos/video_42.mp4",
+      "caption": "The video opens with a person standing on a grassy field, surrounded by trees and a clear sky. The individual is wearing a black top and white pants. They perform a series of acrobatic movements, including a forward roll, followed by a jump and a flip in the air. The person's actions are fluid and continuous, suggesting a practiced routine. The environment appears to be a park or recreational area, with no other people visible in the immediate vicinity."
+    },
+    {
+      "v0_id": "video_45",
+      "video_path": "demo_videos/videos/video_45.mp4",
+      "caption": "The video features a man wearing a cowboy hat, a long-sleeved shirt, and jeans, riding atop a brown horse. The horse is standing on the back of another horse, which is also brown and appears to be saddled. The background showcases a vast green field with rolling hills and a clear blue sky. The man seems to be in control, maintaining his balance while sitting on the second horse's back."
+    },
+    {
+      "v0_id": "video_46",
+      "video_path": "demo_videos/videos/video_46.mp4",
+      "caption": "The video opens with a man wearing a cowboy hat, denim shirt, and jeans, standing on the backs of two horses. The horses are galloping side by side in an open field with a clear sky above. The man is positioned in the center between the two horses, maintaining his balance as they move forward. The horses appear to be well-groomed, with one being black and the other brown. The background shows a rural landscape with green fields, a few scattered trees, and a distant fence line. There are no visible titles, subtitles, or informative text within the frames provided."
+    },
+    {
+      "v0_id": "video_47",
+      "video_path": "demo_videos/videos/video_47.mp4",
+      "caption": "The video features a man dressed in cowboy attire, including a hat, vest, and jeans, performing a stunt where he balances on the backs of two galloping horses. The man is positioned in the center of the frame, with one horse to his left and the other to his right. Both horses are brown with white markings on their faces. The background shows an open field with a clear sky above and mountains in the distance. The man maintains his balance as the horses move forward, demonstrating skill and control."
+    },
+    {
+      "v0_id": "video_48",
+      "video_path": "demo_videos/videos/video_48.mp4",
+      "caption": "The video features a scuba diver in a black wetsuit with yellow fins, equipped with a diving tank and a regulator. The diver is seen swimming above a vibrant coral reef teeming with various species of fish. The water is clear, allowing for good visibility of the underwater environment. The coral reef displays a range of colors from purples to yellows, and the fish are mostly small and brightly colored, darting around the reef."
+    },
+    {
+      "v0_id": "video_49",
+      "video_path": "demo_videos/videos/video_49.mp4",
+      "caption": "The video features a cat with a white and grey coat, standing on its hind legs in an indoor setting that resembles an Olympic arena. The cat is holding a barbell with black weights on either end above its head with its front paws. The background includes a crowd of spectators, some of whom are waving red flags, and there are banners with the word \"Olympic\" visible, suggesting a sporting event theme. The lighting is bright, and the atmosphere appears to be lively and energetic."
+    },
+    {
+      "v0_id": "video_50",
+      "video_path": "demo_videos/videos/video_50.mp4",
+      "caption": "The video opens with a close-up of a cat standing on its hind legs, gripping a barbell with weights on either end. The cat's fur is predominantly white with grey markings, and it has a focused expression as it looks directly at the camera. The background reveals an indoor setting with a large audience seated in stands, suggesting a competitive or exhibition event. The audience appears to be watching attentively. There are banners with the Olympic rings and the text \"Olympic Games\" visible, indicating that this is a staged event, possibly for entertainment or promotional purposes. The lighting is bright, and the atmosphere seems lively."
+    },
+    {
+      "v0_id": "video_51",
+      "video_path": "demo_videos/videos/video_51.mp4",
+      "caption": "The video features a man and a woman dancing on a bridge. The man is wearing a beige suit with a white shirt and dark tie, while the woman is dressed in a red dress with white polka dots and red heels. They are holding hands and spinning around each other, displaying a sense of joy and connection. The background shows a classic Parisian building with large windows and ornate details, suggesting an urban setting. The sky is clear, indicating good weather."
+    },
+    {
+      "v0_id": "video_52",
+      "video_path": "demo_videos/videos/video_52.mp4",
+      "caption": "The video opens with a man and woman dancing on a street. The man is wearing a beige suit with a white shirt and dark tie, while the woman is dressed in a red polka dot dress with a flared skirt and red heels. They are holding hands and spinning around each other, performing a series of dance moves that include twirls and spins. The background features a classic Parisian building with large windows and ornate balconies, suggesting an urban setting. The sky is clear, indicating fair weather. There are no visible titles, subtitles, or informative text within the frames provided."
+    },
+    {
+      "v0_id": "video_54",
+      "video_path": "demo_videos/videos/video_54.mp4",
+      "caption": "The video features a male and female ballet dancer performing on a stage with a red curtain backdrop. The male dancer is dressed in a white shirt, black vest, and white tights, while the female dancer wears a light blue tutu with a frilled hem, a fitted bodice, and white tights. Both dancers are wearing ballet shoes. They perform a series of ballet movements that include lifts, spins, and poses. The lighting focuses on the dancers, highlighting their form and the details of their costumes."
+    },
+    {
+      "v0_id": "video_55",
+      "video_path": "demo_videos/videos/video_55.mp4",
+      "caption": "The video features a male and female ballet dancer performing on a stage with a red curtain backdrop. The male dancer is dressed in a white shirt, black vest, and white tights, while the female dancer wears a light blue tutu, white tights, and ballet shoes. They are engaged in a classical ballet pose, with the male dancer supporting the female dancer as she extends her leg and arm gracefully. The lighting focuses on the dancers, highlighting their movements against the dark background."
+    },
+    {
+      "v0_id": "video_58",
+      "video_path": "demo_videos/videos/video_58.mp4",
+      "caption": "The video opens with a scene of a grand ballroom, where a male and female dancer are performing on stage. The male dancer is dressed in a black suit with gold trimmings, while the female dancer wears a light blue gown with ruffles and a large feathered hat. They are holding hands and appear to be in the middle of a dance routine. In the background, an orchestra is seated, suggesting that they are providing live music for the performance. The lighting is focused on the dancers, highlighting their movements against the dimly lit stage."
+    },
+    {
+      "v0_id": "video_60",
+      "video_path": "demo_videos/videos/video_60.mp4",
+      "caption": "The video features a person wearing a maroon long-sleeve shirt, seated at a wooden table. They are holding a fork in their right hand and appear to be eating spaghetti with tomato sauce from a white plate. The setting seems to be indoors, possibly a home or a casual dining environment, as indicated by the plain wall and door in the background. The lighting is soft and warm, suggesting an evening or indoor setting."
+    }
+  ],
+  "heldout": [
+    {
+      "v0_id": "video_30",
+      "video_path": "demo_videos/videos/video_30.mp4",
+      "caption": "A man and a woman sit on a wooden bench in a park, engrossed in their respective activities. The man, dressed in a light blue suit with a white shirt and red tie, holds a clipboard and appears to be reading from it. The woman, wearing a white dress with a pink cardigan and white shoes, is reading a magazine. The scene is set in a sunny park with lush green grass, trees, and statues in the background. The main subjects are a man and a woman sitting on a wooden bench. The man is dressed in a light blue suit, white shirt, and red tie, holding a clipboard and reading from it. The woman is wearing a white dress with a pink cardigan and white shoes, reading a magazine. They are positioned side by side on the bench, with the man on the right and the woman on the left. The man occasionally points at something, possibly explaining or discussing it with the woman. The background features a park setting with green grass, trees, and statues. There are several people walking in the background, and a few cars are parked nearby. The scene is set during the daytime with bright sunlight casting shadows on the ground. The park appears well-maintained and serene, with a mix of natural and man-made elements."
+    },
+    {
+      "v0_id": "video_40",
+      "video_path": "demo_videos/videos/video_40.mp4",
+      "caption": "The video opens with a scene of two judo competitors on a mat, one wearing a white gi and the other in blue. The scoreboard in the background shows \"NED\" and \"RUS\" with a score of 0-0, indicating that the match is in its early stages. The timer reads 2:24 minutes, suggesting that there's still ample time for the match to unfold. The competitors are engaged in a close contest, with the competitor in white attempting to throw the one in blue. The sequence of frames captures the progression of the throw, starting from the initial grip, through the execution of the technique, and ending with the competitor in blue being taken down onto the mat. The audience is visible in the background, seated in stands, watching the match attentively."
+    },
+    {
+      "v0_id": "video_43",
+      "video_path": "demo_videos/videos/video_43.mp4",
+      "caption": "The video opens with a close-up of a gymnast in mid-air, executing a flip above the balance beam. The gymnast is wearing a dark blue leotard with white lettering on the back. The background is dimly lit, suggesting an indoor setting, likely a gymnasium or arena. The balance beam is a light brown color and contrasts with the gymnast's attire. As the sequence progresses, the gymnast lands on the beam with precision, maintaining her balance. The audience is not visible, focusing the viewer's attention solely on the gymnast's performance."
+    },
+    {
+      "v0_id": "video_44",
+      "video_path": "demo_videos/videos/video_44.mp4",
+      "caption": "The video opens with a man standing on the edge of a swimming pool, poised to dive. He is wearing blue swim trunks and appears to be barefoot. The pool is surrounded by a deck with white lounge chairs and a dark fence in the background. The water is clear and blue, indicating it is well-maintained. As the man dives, he creates a large splash upon entry into the water."
+    },
+    {
+      "v0_id": "video_53",
+      "video_path": "demo_videos/videos/video_53.mp4",
+      "caption": "The video features a man and a woman dancing on a street in an urban setting. The man is wearing a beige suit with a white shirt and a dark tie, while the woman is dressed in a red dress with white polka dots and red heels. They are performing a dance that involves spins and coordinated steps. The background shows a row of buildings with classical architecture, including large windows and ornate balconies. The sky is clear, suggesting it might be daytime. There are no visible texts or subtitles within the frames provided."
+    },
+    {
+      "v0_id": "video_56",
+      "video_path": "demo_videos/videos/video_56.mp4",
+      "caption": "The video features two ballet dancers on a stage with a red curtain backdrop. The female dancer is wearing a light blue tutu, white tights, and ballet shoes, while the male dancer is dressed in a white shirt, black vest, white tights, and ballet shoes. They are performing a classical ballet routine, with the male dancer leading the movements. Their poses and positions change throughout the sequence, indicating a choreographed dance. The lighting is focused on the dancers, highlighting their movements against the dark background."
+    },
+    {
+      "v0_id": "video_57",
+      "video_path": "demo_videos/videos/video_57.mp4",
+      "caption": "The video features a male and female dancer performing on a stage. The male dancer is dressed in a black suit with gold trim, a white shirt, and a black bow tie. The female dancer wears a light blue, full-length gown with ruffles and a large, white hat adorned with feathers. Both dancers are wearing dance shoes. They perform a series of coordinated dance moves, including spins and arm movements, to the music played by an orchestra seated in the background. The stage is lit with warm, focused lighting that highlights the dancers, while the rest of the scene is dimly lit."
+    },
+    {
+      "v0_id": "video_59",
+      "video_path": "demo_videos/videos/video_59.mp4",
+      "caption": "The video opens with a scene of a figure, presumably Jesus Christ, seated on a cloud. The figure is surrounded by a group of children and sheep. The children are dressed in light-colored clothing, and the sheep are white with fluffy wool. The background consists of a clear sky with a few clouds, suggesting a serene and peaceful atmosphere. The lighting in the video is soft and warm, enhancing the tranquil mood. There are no visible texts or subtitles within the frames provided."
+    }
+  ]
+}

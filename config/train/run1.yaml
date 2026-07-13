@@ -1,0 +1,38 @@
+# Run 1 — pilot DMD, no stitching (PLAN §9). N=2, K=2, 53 v0s, 3000 steps, AMP (A7).
+# CLI flags override these. `bank_dir`, `ckpt`, `out_dir` are required.
+
+# --- data ---
+split: config/data/pilot_split.json
+bank_dir: /orcd/scratch/orcd/014/akshatat/counterfactual_models/middle_bank   # needs >= k_step middles per train v0
+camera_file: demo_videos/cameras/camera_extrinsics.json
+k_step: 2                 # middles marginalized per step (Run 1); K_bank >= 2*k_step
+base_seed: 0
+camera_pool: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+# --- model / checkpoint ---
+ckpt: checkpoints/SpacetimePilot_1.3B_v1.ckpt
+
+# --- optimization (A7) ---
+student_lr: 1.0e-5
+fake_lr: 1.0e-4
+grad_clip: 1.0
+ema_decay: 0.999
+num_train_steps: 1000     # scheduler discretization for sigma sampling (not the loop length)
+sigma_shift: 5.0
+max_steps: 3000           # loop length (Run 1)
+use_gradient_checkpointing: true
+offload_teacher: false    # flip on for L40S / tight VRAM (§10 ladder)
+ema_device: cuda
+
+# --- stitching (Rung 7) — inert until post-Run-1 item 8 ---
+lambda_stitch: 0.0
+
+# --- io / cadence ---
+out_dir: /orcd/scratch/orcd/014/akshatat/counterfactual_models/runs/run1
+ckpt_every: 250
+sample_every: 250
+keep_last: 2
+log_every: 1
+
+# --- safety ---
+mem_budget_gb: 72.0       # 90% of an 80 GB card; SET THIS TO YOUR CARD before running (§10)
