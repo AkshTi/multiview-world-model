@@ -36,7 +36,7 @@ VIDEO_PATH="demo_videos/videos/video_0.mp4"
 CKPT="checkpoints/SpacetimePilot_1.3B_v1.ckpt"
 BANK_DIR="/orcd/scratch/orcd/014/akshatat/counterfactual_models/middle_bank"
 
-python scripts/rung6_smoke.py \
+python -u scripts/rung6_smoke.py \
     --video_path "$VIDEO_PATH" \
     --v0_id video_0 \
     --caption "a video of a scene" \

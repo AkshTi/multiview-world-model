@@ -55,15 +55,21 @@ def parse_args():
     p.add_argument("--num_train_steps", type=int, default=1000)
     p.add_argument("--sigma_shift", type=float, default=5.0)
     p.add_argument("--lr", type=float, default=1e-5, help="student (generator) lr")
-    # Fake-score lr is large ON PURPOSE for the smoke: params are trained in bf16 directly
-    # (no fp32 master weights), where a ~1e-5 update on a ~0.1 weight rounds away — the fake
-    # net would stay byte-identical to the teacher and the arrow would never leave 0. A large
-    # fake lr makes the update representable so the loop demonstrably separates s_fake from
-    # s_real within a few iters. Real training uses a small lr with fp32 master weights.
-    p.add_argument("--fake_lr", type=float, default=1e-2, help="fake-score lr (smoke: large, see code)")
+    # AMP default (A7, 7/6 decision): fp32 trainable params (freeze.to_fp32_trainable) + bf16
+    # autocast forwards make a realistic small lr representable, so 1e-4 is the default here.
+    # --master switches to the OLD, now-retired recipe (bf16 params + fp32-master-copy
+    # AdamW), kept only as an off-by-default regression comparison; that path still needs the
+    # old large fake_lr=1e-2 hack (see master.py) to make its update representable, so the
+    # default below resolves to 1e-2 automatically when --master is set.
+    p.add_argument("--fake_lr", type=float, default=None,
+                   help="fake-score lr (default: 1e-4 under AMP, 1e-2 under --master)")
     p.add_argument("--master", action="store_true",
-                   help="fp32 master weights: enables a realistic small lr that bf16 would round away")
-    return p.parse_args()
+                   help="[off by default] regression path: bf16 params + fp32-master-copy "
+                        "AdamW (MasterAdamW, the pre-AMP numerics) instead of the AMP default")
+    args = p.parse_args()
+    if args.fake_lr is None:
+        args.fake_lr = 1e-2 if args.master else 1e-4
+    return args
 
 
 def _load_video(path):
@@ -158,11 +164,23 @@ def main():
 
     student_trainable = freeze.set_trainable(pipe.dit, verbose=True)      # θ
     fake_trainable = freeze.set_trainable(fake_dit, verbose=False)        # φ (same mask; see design note)
-    Opt = MasterAdamW if args.master else torch.optim.AdamW
-    opt_G = Opt(student_trainable, lr=args.lr)
-    opt_D = Opt(fake_trainable, lr=args.fake_lr)
-    print(f"optimizer: {'MasterAdamW (fp32 master weights)' if args.master else 'AdamW (bf16)'}  "
-          f"student_lr={args.lr:g}  fake_lr={args.fake_lr:g}")
+    if args.master:
+        # Regression path (off by default): retired pure-bf16 + fp32-master-copy numerics.
+        # Params stay bf16; MasterAdamW bolts on fp32 masters (see master.py). Kept only so
+        # this smoke can still reproduce the pre-AMP behavior for comparison.
+        opt_G = MasterAdamW(student_trainable, lr=args.lr)
+        opt_D = MasterAdamW(fake_trainable, lr=args.fake_lr)
+        print(f"optimizer: MasterAdamW (bf16 params + fp32 master copies, REGRESSION path)  "
+              f"student_lr={args.lr:g}  fake_lr={args.fake_lr:g}")
+    else:
+        # AMP default (A7, 7/6): cast the trainable subset to fp32 in place; the forward runs
+        # under bf16 autocast (steps._dit_velocity). Plain AdamW now works at a realistic lr.
+        student_trainable = freeze.to_fp32_trainable(pipe.dit)
+        fake_trainable = freeze.to_fp32_trainable(fake_dit)
+        opt_G = torch.optim.AdamW(student_trainable, lr=args.lr, betas=(0.9, 0.999), weight_decay=0.0)
+        opt_D = torch.optim.AdamW(fake_trainable, lr=args.fake_lr, betas=(0.9, 0.999), weight_decay=0.0)
+        print(f"optimizer: AdamW (fp32 trainable params + bf16 autocast, AMP default)  "
+              f"student_lr={args.lr:g}  fake_lr={args.fake_lr:g}")
 
     pipe.scheduler.set_timesteps(args.num_train_steps, training=True, shift=args.sigma_shift)
     batch = build_batch(args)
@@ -174,12 +192,18 @@ def main():
         _assert_connected(pipe.dit, "student(G)")
         _assert_no_grad(teacher_dit, "teacher")
         _assert_no_grad(fake_dit, "fake(during G)")
+        if not args.master:
+            # A7 grad-clip 1.0 (AMP default only; --master is left unmodified as a clean
+            # regression comparison against the pre-AMP recipe).
+            torch.nn.utils.clip_grad_norm_(student_trainable, max_norm=1.0)
 
     def after_d():
         # The D-step is a real denoising MSE, so the fake net must get nonzero grads.
         freeze.assert_grad_mask(fake_dit)      # fake: grads only on unfrozen modules
         _assert_no_grad(teacher_dit, "teacher")
         _assert_no_grad(pipe.dit, "student(during D)")
+        if not args.master:
+            torch.nn.utils.clip_grad_norm_(fake_trainable, max_norm=1.0)
 
     history = []
     for it in range(args.num_iters):

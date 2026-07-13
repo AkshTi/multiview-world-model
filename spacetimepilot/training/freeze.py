@@ -8,6 +8,12 @@ verified in ``tests/test_freeze.py`` against a mock with the same submodule name
 Checkpointing only runs in train mode (``if self.training and use_gradient_checkpointing``
 in ``WanModel.forward``), so the student and fake-score DiTs must be ``.train()`` even
 though most of their parameters are frozen; the frozen teacher stays ``.eval()``.
+
+``to_fp32_trainable`` (A7, 7/6) implements the other half of the standard-AMP recipe: after
+``set_trainable`` marks the trainable subset, cast just those params to fp32 so a
+realistic small-lr AdamW step doesn't round away on a bf16 write (see ``master.py`` for the
+retired fp32-master workaround this replaces). Frozen params, and the frozen teacher
+entirely, stay bf16.
 """
 
 import torch
@@ -54,6 +60,38 @@ def set_trainable(dit, patterns=DEFAULT_TRAINABLE_PATTERNS, verbose=False):
 
 def trainable_parameter_names(dit, patterns=DEFAULT_TRAINABLE_PATTERNS):
     return [name for name, _ in dit.named_parameters() if _matches(name, patterns)]
+
+
+@torch.no_grad()
+def to_fp32_trainable(dit, patterns=DEFAULT_TRAINABLE_PATTERNS):
+    """Cast trainable params' ``.data`` to fp32 in place; leave frozen params at their dtype.
+
+    Standard-AMP recipe (A7, 7/6): fp32 trainable params + bf16 autocast forwards. A
+    realistic small-lr AdamW update on a bf16 weight rounds away below the bf16 ulp (see
+    ``master.py``'s docstring for the measured failure mode); storing the trainable subset
+    in fp32 fixes that without an fp32-master bolt-on. Frozen params (and the frozen
+    teacher entirely) stay bf16 — only the trainable subset's memory/compute grows.
+
+    Call AFTER ``set_trainable`` (this only touches params already marked
+    ``requires_grad``). Returns the fp32 trainable parameter list, ready for
+    ``torch.optim.AdamW``.
+    """
+    trainable = []
+    for name, p in dit.named_parameters():
+        if _matches(name, patterns):
+            if not p.requires_grad:
+                raise RuntimeError(
+                    f"to_fp32_trainable: {name} matches the trainable patterns but "
+                    "requires_grad is False; call set_trainable(dit) first."
+                )
+            p.data = p.data.float()
+            trainable.append(p)
+    if not trainable:
+        raise RuntimeError(
+            "No trainable parameters matched the patterns; check them against the model's "
+            "named_parameters()."
+        )
+    return trainable
 
 
 def assert_grad_mask(dit, patterns=DEFAULT_TRAINABLE_PATTERNS, require_any_nonzero=True):

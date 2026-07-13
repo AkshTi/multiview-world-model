@@ -11,6 +11,12 @@ checkpoint. It is not CPU/login-node runnable. The pure math it relies on
 
 Two-source smoke (``two_source_smoke_step``) and the DMD loop (``dmd_step_k1``) are added
 after the N-source model edits (Rung 3) and the middle bank (Rung 4).
+
+A7 (7/6 AMP refactor): ``_dit_velocity`` — the shared forward used by ``dmd_step_k1`` /
+``dmd_step_k`` — runs under ``torch.autocast(bf16)``. Trainable params on the student/fake
+DiTs are stored fp32 (``freeze.to_fp32_trainable``); the frozen teacher stays plain bf16.
+See the docstring on ``_dit_velocity`` for the mixed fp32/bf16-param hazard this can raise,
+GPU-only and unverified from this login node.
 """
 
 import torch
@@ -166,6 +172,21 @@ def _dit_velocity(dit, target_noised, source_latents, tgt_cam, src_cams,
     ``source_latents``/``src_cams``/``src_times`` are ordered lists (len 1 = the released
     one-source path, byte-identical per Rung 3; len N = student). Fusion order
     [target, src0, src1, ...] must line up across the three lists (see latents.build_latent_input).
+
+    A7 (7/6 AMP recipe): the forward runs under ``torch.autocast(bf16)``. This is the single
+    call site used by teacher/student/fake in dmd_step_k1 / dmd_step_k, so autocast lands
+    everywhere uniformly — harmless for the frozen bf16 teacher (no_grad already), and what
+    lets the student/fake nets compute in bf16 while their trainable params are stored fp32
+    (freeze.to_fp32_trainable). Loss/score math stays fp32 via the explicit .float() calls in
+    score.py, so autocast never touches the loss itself.
+
+    KNOWN HAZARD (GPU-only, unverified — see scratchpad/amp_refactor_notes.md): student/fake
+    now hold fp32 trainable + bf16 frozen params in the same module. autocast picks op dtype
+    by op TYPE, not param dtype, so an elementwise/residual/norm op combining an fp32
+    activation (from a fp32 trainable layer) with a bf16 one (from a frozen layer) can raise
+    a dtype-mismatch error that only surfaces on a real forward. If that happens, see the
+    scratchpad note for the two fallbacks (widen this autocast region vs. keep the whole
+    module fp32).
     """
     latents_input = latent_utils.build_latent_input(target_noised, source_latents)
     cam_emb = {
@@ -176,14 +197,15 @@ def _dit_velocity(dit, target_noised, source_latents, tgt_cam, src_cams,
         "time_embedding_tgt": tgt_time.to(dtype=dtype, device=device),
         "time_embedding_src": [s.to(dtype=dtype, device=device) for s in src_times],
     }
-    pred = dit(
-        latents_input,
-        timestep=timestep.to(dtype=dtype),
-        cam_emb=cam_emb,
-        context=context,
-        frame_time_embedding=frame_time_embedding,
-        use_gradient_checkpointing=use_gradient_checkpointing,
-    )
+    with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+        pred = dit(
+            latents_input,
+            timestep=timestep.to(dtype=dtype),
+            cam_emb=cam_emb,
+            context=context,
+            frame_time_embedding=frame_time_embedding,
+            use_gradient_checkpointing=use_gradient_checkpointing,
+        )
     return latent_utils.slice_target(pred, target_frames)
 
 

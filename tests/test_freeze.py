@@ -103,6 +103,37 @@ def test_grad_mask_passes_after_backward():
     assert freeze.assert_grad_mask(dit) is True
 
 
+def test_to_fp32_trainable_casts_only_trainable_params():
+    """A7 (7/6 AMP recipe): trainable params -> fp32; frozen params keep their dtype."""
+    dit = _DiT().to(torch.bfloat16)  # mimics pipe.dit params, which load as bf16
+    freeze.set_trainable(dit)
+    trainable = freeze.to_fp32_trainable(dit)
+
+    assert len(trainable) > 0
+    for p in trainable:
+        assert p.dtype == torch.float32
+
+    for name, p in dit.named_parameters():
+        if _expected_trainable(name):
+            assert p.dtype == torch.float32, name
+        else:
+            assert p.dtype == torch.bfloat16, name  # frozen params untouched
+
+
+def test_to_fp32_trainable_requires_set_trainable_first():
+    # nn.Module params default to requires_grad=True, so to reproduce "set_trainable was
+    # never called" we must explicitly freeze everything first (mirrors set_trainable's own
+    # first step, without the unfreezing second step).
+    dit = _DiT()
+    dit.requires_grad_(False)
+    raised = False
+    try:
+        freeze.to_fp32_trainable(dit)
+    except RuntimeError:
+        raised = True
+    assert raised, "to_fp32_trainable should refuse params that aren't marked trainable yet"
+
+
 def test_grad_mask_catches_a_leak():
     dit = _DiT()
     freeze.set_trainable(dit)

@@ -50,9 +50,11 @@ def parse_args():
     p.add_argument("--num_iters", type=int, default=3)
     p.add_argument("--num_train_steps", type=int, default=1000)
     p.add_argument("--sigma_shift", type=float, default=5.0)
+    # AMP default (A7, 7/6): fp32 trainable params (freeze.to_fp32_trainable) + bf16 autocast
+    # (steps._dit_velocity) make these realistic lrs representable — no MasterAdamW bf16-hack
+    # needed here (contrast the old fake_lr=1e-2 kept in rung5_smoke's --master regression path).
     p.add_argument("--lr", type=float, default=1e-5, help="student (generator) lr")
-    p.add_argument("--fake_lr", type=float, default=1e-2,
-                   help="fake-score lr (smoke: large so bf16 updates are representable; see rung5_smoke)")
+    p.add_argument("--fake_lr", type=float, default=1e-4, help="fake-score lr")
     p.add_argument("--offload_teacher", action="store_true",
                    help="keep the frozen teacher on CPU except for its forward (only needed on tight VRAM)")
     return p.parse_args()
@@ -104,10 +106,16 @@ def main():
     teacher_dit = copy.deepcopy(pipe.dit).to(teacher_start).requires_grad_(False).eval()
     fake_dit = copy.deepcopy(pipe.dit)
 
-    student_trainable = freeze.set_trainable(pipe.dit, verbose=True)
-    fake_trainable = freeze.set_trainable(fake_dit, verbose=False)
-    opt_G = torch.optim.AdamW(student_trainable, lr=args.lr)
-    opt_D = torch.optim.AdamW(fake_trainable, lr=args.fake_lr)
+    freeze.set_trainable(pipe.dit, verbose=True)
+    freeze.set_trainable(fake_dit, verbose=False)
+    # AMP default (A7, 7/6): cast the trainable subset to fp32 in place; the forward runs
+    # under bf16 autocast (steps._dit_velocity). Plain AdamW at a realistic lr.
+    student_trainable = freeze.to_fp32_trainable(pipe.dit)
+    fake_trainable = freeze.to_fp32_trainable(fake_dit)
+    opt_G = torch.optim.AdamW(student_trainable, lr=args.lr, betas=(0.9, 0.999), weight_decay=0.0)
+    opt_D = torch.optim.AdamW(fake_trainable, lr=args.fake_lr, betas=(0.9, 0.999), weight_decay=0.0)
+    print(f"optimizer: AdamW (fp32 trainable params + bf16 autocast, AMP default)  "
+          f"student_lr={args.lr:g}  fake_lr={args.fake_lr:g}")
 
     pipe.scheduler.set_timesteps(args.num_train_steps, training=True, shift=args.sigma_shift)
     print(f"Building batch with K={args.num_middles} middles:")
@@ -118,11 +126,13 @@ def main():
         _assert_connected(pipe.dit, "student(G)")
         _assert_no_grad(teacher_dit, "teacher")
         _assert_no_grad(fake_dit, "fake(during G)")
+        torch.nn.utils.clip_grad_norm_(student_trainable, max_norm=1.0)  # A7 grad-clip 1.0
 
     def after_d():
         freeze.assert_grad_mask(fake_dit)
         _assert_no_grad(teacher_dit, "teacher")
         _assert_no_grad(pipe.dit, "student(during D)")
+        torch.nn.utils.clip_grad_norm_(fake_trainable, max_norm=1.0)
 
     history = []
     for it in range(args.num_iters):
