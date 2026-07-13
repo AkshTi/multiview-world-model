@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "train": [
+    {
+      "v0_id": "video_0",
+      "video_path": "demo_videos/videos/video_0.mp4",
+      "caption": "The video opens with a vibrant street scene where a group of people are gathered. The crowd is diverse"
+    }
+  ],
+  "heldout": []
+}
