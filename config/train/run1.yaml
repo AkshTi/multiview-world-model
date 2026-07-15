@@ -3,7 +3,7 @@
 
 # --- data ---
 split: config/data/pilot_split.json
-bank_dir: /orcd/scratch/orcd/014/akshatat/counterfactual_models/middle_bank   # needs >= k_step middles per train v0
+bank_dir: /orcd/scratch/orcd/014/akshatat/counterfactual_models/middle_bank_cfg1   # cfg=1, K_bank=8 (Stage A); NOT the old .../middle_bank (cfg=5)
 camera_file: demo_videos/cameras/camera_extrinsics.json
 k_step: 2                 # middles marginalized per step (Run 1); K_bank >= 2*k_step
 base_seed: 0
@@ -19,7 +19,9 @@ grad_clip: 1.0
 ema_decay: 0.999
 num_train_steps: 1000     # scheduler discretization for sigma sampling (not the loop length)
 sigma_shift: 5.0
-max_steps: 3000           # loop length (Run 1)
+max_steps: 1500           # Run 1 initial ceiling (plan line 307 halving: step time ~1.9min at-budget).
+                          # NOT a commitment — ckpt every 250, gate@500, eval@1000. Extend via --resume
+                          # only if the 1000-step eval curve is still climbing. Production is Stage 4 (10-20k).
 use_gradient_checkpointing: true
 offload_teacher: false    # flip on for L40S / tight VRAM (§10 ladder)
 ema_device: cuda
@@ -31,8 +33,8 @@ lambda_stitch: 0.0
 out_dir: /orcd/scratch/orcd/014/akshatat/counterfactual_models/runs/run1
 ckpt_every: 250
 sample_every: 250
-keep_last: 2
+keep_last: 6              # ~6 ckpts x 23GB: keeps the 250..1500 eval curve alive on scratch
 log_every: 1
 
 # --- safety ---
-mem_budget_gb: 72.0       # 90% of an 80 GB card; SET THIS TO YOUR CARD before running (§10)
+mem_budget_gb: 130.0      # H200 (141 GB); K=2 measured 70.4 GB at turn-over

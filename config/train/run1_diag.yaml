@@ -1,0 +1,40 @@
+# Run 1 DIAGNOSTIC — short K=1 probe of the DMD mechanism (NOT the pilot). Answers "is the
+# arrow healthy + does v1-conditioning move cross-view consistency at all" cheaply, then we
+# extend/redo at K=2 only if it's working. K=1 ~halves per-step cost vs run1.yaml; 200 steps
+# fits one 6h H200 window with no resume. Same bank/split/optim as run1.yaml otherwise.
+
+# --- data ---
+split: config/data/pilot_split.json
+bank_dir: /orcd/scratch/orcd/014/akshatat/counterfactual_models/middle_bank_cfg1
+camera_file: demo_videos/cameras/camera_extrinsics.json
+k_step: 1                 # ONE middle per step (diagnostic speed; run1 proper uses 2)
+base_seed: 0
+camera_pool: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+# --- model / checkpoint ---
+ckpt: checkpoints/SpacetimePilot_1.3B_v1.ckpt
+
+# --- optimization (A7) ---
+student_lr: 1.0e-5
+fake_lr: 1.0e-4
+grad_clip: 1.0
+ema_decay: 0.999
+num_train_steps: 1000
+sigma_shift: 5.0
+max_steps: 200            # short probe; extend via --resume only if the curve is climbing
+use_gradient_checkpointing: true   # keep ON (validated 70GB); the no-AC speed probe is separate
+offload_teacher: false
+ema_device: cuda
+
+# --- stitching (Rung 7) — inert ---
+lambda_stitch: 0.0
+
+# --- io / cadence ---
+out_dir: /orcd/scratch/orcd/014/akshatat/counterfactual_models/runs/run1_diag
+ckpt_every: 50            # 4 checkpoints over 200 steps -> dense eval points
+sample_every: 0           # skip in-loop viz; we eval offline against B0/B1
+keep_last: 4
+log_every: 1
+
+# --- safety ---
+mem_budget_gb: 130.0      # H200 141 GB; K=1 should sit well under this

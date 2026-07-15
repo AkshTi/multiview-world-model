@@ -249,6 +249,19 @@ smokes, `build_middle_bank.py`, `compute_metrics_camxtime.py`, sbatch templates.
   **2 Quality guard:** Laplacian sharpness + LPIPS-to-teacher (FVD at Run 4). **3 Strip quality**
   (Rung 7 gate). **4 No-regression:** `compute_metrics_camxtime.py` + generated-pair vs
   GT-grid-pair features.
+- **[7/14 AMENDMENT — (V) measured, needs ratify] 1a scored with ESTIMATED H, not commanded H.**
+  Empirical calibration (`scripts/calibrate_fov.py`, intra-video pairs, 4 v0s × cam01–04):
+  released SPT renders rotations at **1.2–2.2× the commanded magnitude** (median 1.6, scene-
+  and segment-dependent) with no stable implied FOV (per-pair self-cal IQR 59–97°), while
+  individual videos ARE locally homography-consistent where matches are dense (ortho-residual
+  <0.15 at 300–2100 inliers). ⇒ No K exists to plug into `K·R_rel·K⁻¹` (section 13 #7 is moot
+  for 1a), and a commanded-H score would mostly measure inherited command disobedience. As
+  scored (`scripts/eval_report.py` + `spacetimepilot/eval/matching.py`): RANSAC-estimate H from
+  SIFT matches between v1 and the method's a2 at matched t>0; report warp-PSNR under H_est +
+  inlier fraction, with an **anti-copy guard** (median inlier displacement <5 px ⇒ H≈I ⇒ v1 was
+  copied; flags the score) and an **obedience direction-cosine** (observed vs commanded rotation
+  direction — direction is FOV-insensitive, magnitude is not). Teacher command disobedience
+  (the 1.2–2.2× finding) is ALSO a standalone result to raise with Hyunwoo.
 - Rollout per A6, EMA weights, fixed seeds. Cadence: iter-0 (=baselines) → every 1k steps →
   full at end.
 - **Run-1 success rule:** 1a AND 1b beat B0 and B1 on ≥6/8 held-out v0s; metric-2 within 10% of

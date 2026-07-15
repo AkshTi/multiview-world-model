@@ -1,0 +1,112 @@
+{
+  "schema": 1,
+  "note": "Fixed eval tuples for metric-1a (rotation-homography agreement), PLAN_DMD_TRAINING.md section 8. v1_cam/a2_cam both in {cam01..cam04} (rotation-only pool per ledger #1) so matched-time frames t>0 are related by an exact H = K.R_rel.K^-1 (frame 0 excluded: shared sink/anchor copied by every method, degenerate per ledger #2). v1_cam values {1,2} match scripts/build_heldout_bank.sbatch (crossing_cam_types(2)) so v1 is a cached bank middle, never regenerated.",
+  "v0_ids": [
+    "video_30",
+    "video_40",
+    "video_43",
+    "video_44",
+    "video_53",
+    "video_56",
+    "video_57",
+    "video_59"
+  ],
+  "tuples": [
+    {
+      "v0_id": "video_30",
+      "v1_cam": 1,
+      "a2_cam": 3,
+      "tuple_id": "video_30__t0"
+    },
+    {
+      "v0_id": "video_30",
+      "v1_cam": 2,
+      "a2_cam": 4,
+      "tuple_id": "video_30__t1"
+    },
+    {
+      "v0_id": "video_40",
+      "v1_cam": 1,
+      "a2_cam": 3,
+      "tuple_id": "video_40__t0"
+    },
+    {
+      "v0_id": "video_40",
+      "v1_cam": 2,
+      "a2_cam": 4,
+      "tuple_id": "video_40__t1"
+    },
+    {
+      "v0_id": "video_43",
+      "v1_cam": 1,
+      "a2_cam": 3,
+      "tuple_id": "video_43__t0"
+    },
+    {
+      "v0_id": "video_43",
+      "v1_cam": 2,
+      "a2_cam": 4,
+      "tuple_id": "video_43__t1"
+    },
+    {
+      "v0_id": "video_44",
+      "v1_cam": 1,
+      "a2_cam": 3,
+      "tuple_id": "video_44__t0"
+    },
+    {
+      "v0_id": "video_44",
+      "v1_cam": 2,
+      "a2_cam": 4,
+      "tuple_id": "video_44__t1"
+    },
+    {
+      "v0_id": "video_53",
+      "v1_cam": 1,
+      "a2_cam": 3,
+      "tuple_id": "video_53__t0"
+    },
+    {
+      "v0_id": "video_53",
+      "v1_cam": 2,
+      "a2_cam": 4,
+      "tuple_id": "video_53__t1"
+    },
+    {
+      "v0_id": "video_56",
+      "v1_cam": 1,
+      "a2_cam": 3,
+      "tuple_id": "video_56__t0"
+    },
+    {
+      "v0_id": "video_56",
+      "v1_cam": 2,
+      "a2_cam": 4,
+      "tuple_id": "video_56__t1"
+    },
+    {
+      "v0_id": "video_57",
+      "v1_cam": 1,
+      "a2_cam": 3,
+      "tuple_id": "video_57__t0"
+    },
+    {
+      "v0_id": "video_57",
+      "v1_cam": 2,
+      "a2_cam": 4,
+      "tuple_id": "video_57__t1"
+    },
+    {
+      "v0_id": "video_59",
+      "v1_cam": 1,
+      "a2_cam": 3,
+      "tuple_id": "video_59__t0"
+    },
+    {
+      "v0_id": "video_59",
+      "v1_cam": 2,
+      "a2_cam": 4,
+      "tuple_id": "video_59__t1"
+    }
+  ]
+}

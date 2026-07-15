@@ -226,7 +226,12 @@ def sample_v2(pipe, batch, scheduler):
         batch["tgt_time_embedding"], [batch["src_time_embedding"], batch["mid_time_embeddings"][0]],
         prompt, t_T, latent_utils.LATENT_FRAMES_PER_VIDEO, dtype, device, use_gradient_checkpointing=False)
     v2_hat = score_utils.x0_from_velocity(z, v_pred, sigma_T)
-    return latent_utils.decode_video_nograd(pipe, v2_hat)
+    decoded = latent_utils.decode_video_nograd(pipe, v2_hat)
+    # Mirror the released __call__ (spacetimepilot.py:767-769): decode_video returns a raw
+    # bf16 tensor (B,C,T,H,W, range ~[-1,1]); tensor2video drops the batch dim and yields
+    # uint8 PIL frames. save_video does np.array(frame), which chokes on a bf16 tensor — so
+    # the conversion must happen HERE, exactly as inference does it.
+    return pipe.tensor2video(decoded[0])
 
 
 def maybe_sample(pipe, ema, scheduler, sampler, cam_data, out_dir, step, n=4):
@@ -355,6 +360,17 @@ def main():
                 save_ckpt(os.path.join(cfg["out_dir"], f"ckpt_{step}.pt"),
                           step, pipe.dit, fake, opt_G, opt_D, ema, cfg)
                 prune_ckpts(cfg["out_dir"], cfg["keep_last"])
+
+        # Final checkpoint at max_steps-1 (the grid above only fires on ckpt_every multiples),
+        # so chained resume windows see start >= max_steps and no-op instead of redoing the
+        # tail. Guard on `start`: a window that resumed an already-finished run never entered
+        # the loop and must not re-save.
+        last = cfg["max_steps"] - 1
+        if cfg["ckpt_every"] and start < cfg["max_steps"] \
+                and not os.path.exists(os.path.join(cfg["out_dir"], f"ckpt_{last}.pt")):
+            save_ckpt(os.path.join(cfg["out_dir"], f"ckpt_{last}.pt"),
+                      last, pipe.dit, fake, opt_G, opt_D, ema, cfg)
+            prune_ckpts(cfg["out_dir"], cfg["keep_last"])
 
     print("training loop finished")
 
