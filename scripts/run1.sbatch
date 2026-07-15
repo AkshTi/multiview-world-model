@@ -27,9 +27,10 @@ export TOKENIZERS_PARALLELISM=false
 
 python -c "import torch; print('torch', torch.__version__, torch.cuda.get_device_name(0))"
 
-# timeout: leave ~12 min for the final in-flight step + SLURM teardown so the ckpt on disk
-# stays clean (train_dmd saves atomically via .tmp; a hard kill mid-step just loses <2 min).
-timeout 341m python -u scripts/train_dmd.py --config config/train/run1.yaml || {
+# timeout margin: SIGTERM at 330m; the in-flight step (~2 min) + a possible in-flight
+# sample pass (~8 min) + the graceful ckpt save (~3 min, 23 GB) must all fit before
+# SLURM's 360m hard kill. train_dmd catches TERM and checkpoints at the step boundary.
+timeout 330m python -u scripts/train_dmd.py --config config/train/run1.yaml || {
     rc=$?
     if [ $rc -eq 124 ]; then echo "window timeout hit (expected mid-run) -- next window resumes"; exit 0; fi
     exit $rc

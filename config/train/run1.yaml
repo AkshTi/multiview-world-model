@@ -33,7 +33,7 @@ lambda_stitch: 0.0
 out_dir: /orcd/scratch/orcd/014/akshatat/counterfactual_models/runs/run1
 ckpt_every: 250
 sample_every: 250
-keep_last: 6              # ~6 ckpts x 23GB: keeps the 250..1500 eval curve alive on scratch
+keep_last: 8              # grid ckpts + timeout ckpts x 23GB; scratch is at 239/1024 GB
 log_every: 1
 
 # --- safety ---

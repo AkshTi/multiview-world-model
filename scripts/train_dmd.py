@@ -21,6 +21,7 @@ is intentionally NOT wired — `lambda_stitch` is an inert hook for the post-Run
 import argparse
 import json
 import os
+import signal
 import subprocess
 import sys
 import time
@@ -265,6 +266,19 @@ def seed_step(base_seed, step):
 def main():
     cfg = load_config()
     assert torch.cuda.is_available(), "no CUDA device — request a GPU node"
+
+    # Graceful shutdown: the run1 window chain wraps this process in `timeout` (SIGTERM at
+    # ~5.6h). ckpt_every=250 at ~116s/step means a 6h window ends BEFORE the first grid save
+    # — without this handler every window would die checkpoint-less and the next would
+    # restart from step 0 forever. The handler only sets a flag; the loop saves at the next
+    # step boundary and exits cleanly, so resume is exact (step-keyed RNG).
+    stop_requested = {"flag": False}
+
+    def _on_term(signum, frame):
+        stop_requested["flag"] = True
+        print(f"[signal] caught {signum}; will checkpoint and exit at the next step boundary")
+
+    signal.signal(signal.SIGTERM, _on_term)
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     os.makedirs(cfg["out_dir"], exist_ok=True)
 
@@ -360,6 +374,14 @@ def main():
                 save_ckpt(os.path.join(cfg["out_dir"], f"ckpt_{step}.pt"),
                           step, pipe.dit, fake, opt_G, opt_D, ema, cfg)
                 prune_ckpts(cfg["out_dir"], cfg["keep_last"])
+
+            if stop_requested["flag"]:
+                ck = os.path.join(cfg["out_dir"], f"ckpt_{step}.pt")
+                if not os.path.exists(ck):  # grid save above may have just written it
+                    save_ckpt(ck, step, pipe.dit, fake, opt_G, opt_D, ema, cfg)
+                    prune_ckpts(cfg["out_dir"], cfg["keep_last"])
+                print(f"[signal] saved ckpt_{step}; exiting for the next window to resume")
+                return  # NOT break: the final-save below would mislabel these weights as max_steps-1
 
         # Final checkpoint at max_steps-1 (the grid above only fires on ckpt_every multiples),
         # so chained resume windows see start >= max_steps and no-op instead of redoing the
