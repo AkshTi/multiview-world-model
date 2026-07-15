@@ -19,9 +19,10 @@ grad_clip: 1.0
 ema_decay: 0.999
 num_train_steps: 1000     # scheduler discretization for sigma sampling (not the loop length)
 sigma_shift: 5.0
-max_steps: 1000           # Run 1 ceiling, cut 1500->1000 (7/15): eval@250/500/1000 is the decision
-                          # curve; extend via --resume ONLY if it's still climbing at 1000. ~32 GPU-h
-                          # vs 48. NOT a commitment. Production is Stage 4 (10-20k).
+max_steps: 750            # Run 1 ceiling (7/15): a STOP-AND-LOOK point, not a science number.
+                          # eval@250/500/749 = a 3-point curve to judge the trend; ~24 GPU-h.
+                          # The real decisions are the intermediate evals; extend via --resume ONLY
+                          # if 500->750 is still climbing. Production is Stage 4 (10-20k).
 use_gradient_checkpointing: true
 offload_teacher: false    # flip on for L40S / tight VRAM (§10 ladder)
 ema_device: cuda

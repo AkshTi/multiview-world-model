@@ -11,8 +11,8 @@ RUN_DIR=/orcd/scratch/orcd/014/akshatat/counterfactual_models/runs/run1
 EVAL_DIR=/orcd/scratch/orcd/014/akshatat/counterfactual_models/eval/pilot_baselines
 MARK=/tmp/.run1_eval_marks; mkdir -p "$MARK"
 BAD="FAILED|OUT_OF_MEMORY|NODE_FAIL"
-MILESTONES="250 500 999"           # ckpt steps for a 1000-step run (grid@250/500 + final@999)
-FINAL_MILESTONE="999"
+MILESTONES="250 500 749"           # ckpt steps for a 750-step run (grid@250/500 + final@749)
+FINAL_MILESTONE="749"
 
 for i in $(seq 1 132); do
     for J in "$@"; do
