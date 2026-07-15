@@ -1,0 +1,28 @@
+# Speed probe: run1 config but gradient checkpointing OFF (spend the H200's idle ~70GB on
+# activation memory to buy speed). 8 steps, separate out_dir, high mem budget so the step-5
+# auto-abort only trips on a genuine near-OOM. If it completes and peak < ~135GB and step
+# time < 116s, flip use_gradient_checkpointing:false into run1.yaml for the remaining windows.
+split: config/data/pilot_split.json
+bank_dir: /orcd/scratch/orcd/014/akshatat/counterfactual_models/middle_bank_cfg1
+camera_file: demo_videos/cameras/camera_extrinsics.json
+k_step: 2
+base_seed: 0
+camera_pool: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+ckpt: checkpoints/SpacetimePilot_1.3B_v1.ckpt
+student_lr: 1.0e-5
+fake_lr: 1.0e-4
+grad_clip: 1.0
+ema_decay: 0.999
+num_train_steps: 1000
+sigma_shift: 5.0
+max_steps: 8
+use_gradient_checkpointing: false   # <-- the thing under test
+offload_teacher: false
+ema_device: cuda
+lambda_stitch: 0.0
+out_dir: /orcd/scratch/orcd/014/akshatat/counterfactual_models/runs/probe_noac
+ckpt_every: 0                       # don't write 23GB ckpts for a throwaway probe
+sample_every: 0
+keep_last: 0
+log_every: 1
+mem_budget_gb: 138.0                # H200 141GB; abort just below true OOM

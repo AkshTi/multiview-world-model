@@ -19,9 +19,9 @@ grad_clip: 1.0
 ema_decay: 0.999
 num_train_steps: 1000     # scheduler discretization for sigma sampling (not the loop length)
 sigma_shift: 5.0
-max_steps: 1500           # Run 1 initial ceiling (plan line 307 halving: step time ~1.9min at-budget).
-                          # NOT a commitment — ckpt every 250, gate@500, eval@1000. Extend via --resume
-                          # only if the 1000-step eval curve is still climbing. Production is Stage 4 (10-20k).
+max_steps: 1000           # Run 1 ceiling, cut 1500->1000 (7/15): eval@250/500/1000 is the decision
+                          # curve; extend via --resume ONLY if it's still climbing at 1000. ~32 GPU-h
+                          # vs 48. NOT a commitment. Production is Stage 4 (10-20k).
 use_gradient_checkpointing: true
 offload_teacher: false    # flip on for L40S / tight VRAM (§10 ladder)
 ema_device: cuda

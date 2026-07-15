@@ -8,9 +8,11 @@
 
 cd /home/akshatat/code/SpaceTimePilot
 RUN_DIR=/orcd/scratch/orcd/014/akshatat/counterfactual_models/runs/run1
+EVAL_DIR=/orcd/scratch/orcd/014/akshatat/counterfactual_models/eval/pilot_baselines
 MARK=/tmp/.run1_eval_marks; mkdir -p "$MARK"
 BAD="FAILED|OUT_OF_MEMORY|NODE_FAIL"
-MILESTONES="500 1000 1499"
+MILESTONES="250 500 999"           # ckpt steps for a 1000-step run (grid@250/500 + final@999)
+FINAL_MILESTONE="999"
 
 for i in $(seq 1 132); do
     for J in "$@"; do
@@ -29,6 +31,13 @@ for i in $(seq 1 132); do
             EJ=$(sbatch --parsable --export=ALL,RUN_DIR="$RUN_DIR",CKPT="$CK" scripts/eval_ckpt.sbatch)
             touch "$MARK/eval_$S"
             echo "=== MILESTONE ckpt_$S: eval job $EJ submitted at $(date '+%F %T') ==="
+            # After the FINAL milestone's eval, chain the experiment summary (afterok) so the
+            # run ends with the Hyunwoo-ready SUMMARY.md, no manual step.
+            if [ "$S" = "$FINAL_MILESTONE" ]; then
+                SJ=$(sbatch --parsable --dependency=afterok:"$EJ" \
+                     --export=ALL,EVAL_DIR="$EVAL_DIR",RUN_DIR="$RUN_DIR" scripts/summarize.sbatch)
+                echo "=== FINAL: summary job $SJ chained after eval $EJ ==="
+            fi
         fi
         [ -f "$MARK/eval_$S" ] || LAST_DONE=0
     done
